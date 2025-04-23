@@ -32,7 +32,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           {product.price.toLocaleString()}원
         </p>
       </CardContent>
-      <CardFooter className="bg-gray-50 p-4 flex justify-between">
+      <CardFooter className="bg-stone-50 p-4 flex justify-between">
         <Button
           variant="outline"
           size="sm"
@@ -42,7 +42,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
           -
         </Button>
         <span>{quantity}</span>
-        <Button variant="default" size="sm" onClick={() => onAdd(product)}>
+        <Button
+          className="bg-brown-900 hover:bg-brown-800"
+          size="sm"
+          onClick={() => onAdd(product)}
+        >
           +
         </Button>
       </CardFooter>
