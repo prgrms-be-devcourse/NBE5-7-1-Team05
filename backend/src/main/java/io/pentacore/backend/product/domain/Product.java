@@ -37,4 +37,13 @@ public class Product {
     @Column(nullable = false)
     private Integer stock;
 
+    public void changeStock(Integer stock) {
+        if(this.stock + stock < 0) {
+            this.stock = 0;
+        } else {
+            this.stock = this.stock + stock;
+        }
+    }
+
+
 }

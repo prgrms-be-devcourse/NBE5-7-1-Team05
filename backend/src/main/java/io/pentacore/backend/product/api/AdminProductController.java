@@ -1,6 +1,8 @@
 package io.pentacore.backend.product.api;
 
 import io.pentacore.backend.global.unit.BaseResponse;
+import io.pentacore.backend.product.domain.Product;
+import io.pentacore.backend.product.dto.UpdateRequest;
 import io.pentacore.backend.product.app.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,6 +14,15 @@ import org.springframework.web.bind.annotation.*;
 public class AdminProductController {
 
     private final ProductService productService;
+
+    @PutMapping("/{productId}")
+    public BaseResponse<Product> updateProductStock(@PathVariable Long productId, @RequestBody UpdateRequest updateRequest) {
+
+        Product updatedProduct = productService.updateProductStock(productId, updateRequest);
+
+        return BaseResponse.ok(updatedProduct);
+
+    }
 
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/{product_id}")
