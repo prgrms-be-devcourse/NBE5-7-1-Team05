@@ -3,6 +3,7 @@ package io.pentacore.backend.product.domain;
 import io.pentacore.backend.admin.domain.Admin;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -45,5 +46,14 @@ public class Product {
         }
     }
 
-
+    @Builder
+    public Product(long id, Admin admin, String name, String category, Integer price, String imageUrl, Integer stock) {
+        this.id = id;
+        this.admin = admin;
+        this.name = name;
+        this.category = category;
+        this.price = price;
+        this.imageUrl = imageUrl;
+        this.stock = stock;
+    }
 }
