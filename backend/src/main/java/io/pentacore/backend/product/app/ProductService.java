@@ -52,6 +52,7 @@ public class ProductService {
         return updatedProduct;
     }
 
+    @Transactional
     public void deleteProduct(Long productId) {
         productRepository.deleteById(productId);
     }
