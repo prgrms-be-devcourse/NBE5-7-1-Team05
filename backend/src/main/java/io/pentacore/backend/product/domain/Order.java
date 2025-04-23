@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "orders")
 public class Order {
+
     @Id
     @Column(name = "order_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,4 +28,7 @@ public class Order {
     @Column(name = "total_price", nullable = false, columnDefinition = "INT UNSIGNED")
     private Integer totalPrice;
 
+//    상품 목록 생기면 작성
+//    @OneToMany(mappedBy = "order")
+//    private List<OrderProduct> orderProducts = new ArrayList<>();
 }
