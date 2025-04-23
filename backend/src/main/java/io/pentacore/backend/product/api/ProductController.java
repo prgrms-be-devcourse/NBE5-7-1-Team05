@@ -25,8 +25,8 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     public BaseResponse<List<Product>> getAllProduct() {
-        List<Product> product = productService.getAllProduct();
-        return BaseResponse.ok(product);
+        List<Product> products = productService.getAllProduct();
+        return BaseResponse.ok(products);
     }
 
 }
