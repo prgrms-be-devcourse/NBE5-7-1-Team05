@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @Getter
 @Entity
+@Table(name = "order_product")
 public class OrderProduct {
     @Id
     @Column(name = "order_product_id")
@@ -20,6 +21,6 @@ public class OrderProduct {
     private Product product;
 
     @Column(columnDefinition = "INT UNSIGNED", nullable = false)
-    Integer quantity;
+    private Integer quantity;
 
 }
