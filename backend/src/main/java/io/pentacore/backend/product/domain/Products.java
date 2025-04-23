@@ -27,7 +27,6 @@ public class Products {
     @Column(length = 10 ,nullable = false)
     private String category;
 
-
     @Column( nullable = false,columnDefinition = "INT UNSIGNED")
     private Integer price;
 
