@@ -1,5 +1,6 @@
 package io.pentacore.backend.product.domain;
 
+import io.pentacore.backend.admin.domain.Admin;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
