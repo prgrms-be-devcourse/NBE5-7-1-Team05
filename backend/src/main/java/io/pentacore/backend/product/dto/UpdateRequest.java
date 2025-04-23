@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 public class UpdateRequest {
 
     @NotNull
-    @Min(0)
     private Integer stock;
 
 }
