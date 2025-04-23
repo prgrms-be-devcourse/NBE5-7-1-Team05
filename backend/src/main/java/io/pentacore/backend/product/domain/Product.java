@@ -8,8 +8,9 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Table(name = "products")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Products {
+public class Product {
 
 
     @Id
