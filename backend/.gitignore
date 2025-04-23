@@ -43,7 +43,4 @@ dist/
 .idea/
 .vscode/
 
-out/
-
-**/application.yml
-**/application.properties
+src/main/resources/application.yml
