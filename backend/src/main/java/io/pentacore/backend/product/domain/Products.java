@@ -16,10 +16,9 @@ public class Products {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-
     @ManyToOne
     @JoinColumn(name = "admin_id")
-    private long admin;
+    private Admin admin;
 
     @Column(length = 10 , nullable = false)
     private String name;
