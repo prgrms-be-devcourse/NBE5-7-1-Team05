@@ -3,14 +3,14 @@ package io.pentacore.backend.product.domain;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "orders")
 public class Order {
-
     @Id
-    @Column(name = "order_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "order_id")
     private Long orderId;
 
     @Column(length = 40, nullable = false)
@@ -23,12 +23,12 @@ public class Order {
     private String postalCode;
 
     @Column(name = "ordered_at", nullable = false)
-    private LocalDateTime orderedAt = LocalDateTime.now();
+    private LocalDateTime orderedAt;
 
     @Column(name = "total_price", nullable = false, columnDefinition = "INT UNSIGNED")
     private Integer totalPrice;
 
-//    상품 목록 생기면 작성
+    // OrderProduct는 나중에 추가
 //    @OneToMany(mappedBy = "order")
-//    private List<OrderProduct> orderProducts = new ArrayList<>();
+//    private List<OrderProduct> orderProductList = new ArrayList<>();
 }
