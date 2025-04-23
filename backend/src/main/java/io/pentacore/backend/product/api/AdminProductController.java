@@ -24,6 +24,7 @@ public class AdminProductController {
             @RequestBody
             ProductRequestDto req
     ) {
+        // TODO : 나중에 지우고 제대로 할당하기 (현재는 테스팅 때문에 하드코딩함.)
         Long adminId = 1L;
         ProductResponseDto res = productService.addProduct(adminId, req);
         return ResponseEntity.status(HttpStatus.CREATED)

@@ -3,7 +3,6 @@ package io.pentacore.backend.product.app;
 import io.pentacore.backend.product.dao.ProductRepository;
 import io.pentacore.backend.product.domain.Product;
 import io.pentacore.backend.product.dto.UpdateRequest;
-import jakarta.transaction.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -14,9 +13,9 @@ import io.pentacore.backend.admin.dao.AdminRepository;
 import io.pentacore.backend.admin.domain.Admin;
 import io.pentacore.backend.product.dto.ProductRequestDto;
 import io.pentacore.backend.product.dto.ProductResponseDto;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class ProductService {
 
@@ -42,6 +41,7 @@ public class ProductService {
         return new ProductResponseDto(savedProduct);
     }
 
+    @Transactional
     public Product updateProductStock(Long productId, UpdateRequest updateRequest) {
 
         Product updatedProduct = productRepository.findById(productId)
@@ -56,6 +56,7 @@ public class ProductService {
         productRepository.deleteById(productId);
     }
 
+    @Transactional(readOnly = true)
     public List<Product> getAllProduct() {
         return productRepository.findAll();
     }
