@@ -46,3 +46,4 @@ dist/
 out/
 
 **/application.yml
+**/application.properties
