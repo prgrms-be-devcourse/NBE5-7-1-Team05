@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product {
 
-
     @Id
     @Column(name ="product_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
