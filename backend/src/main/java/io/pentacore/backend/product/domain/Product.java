@@ -1,5 +1,6 @@
 package io.pentacore.backend.product.domain;
 
+import io.pentacore.backend.admin.domain.Admin;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -8,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Products {
+public class Product {
 
 
     @Id
