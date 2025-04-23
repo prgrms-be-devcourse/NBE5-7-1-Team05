@@ -35,3 +35,10 @@ out/
 
 ### VS Code ###
 .vscode/
+node_modules/
+.env
+.DS_Store
+build/
+dist/
+.idea/
+.vscode/
