@@ -23,7 +23,7 @@ public class Order {
     private String postalCode;
 
     @Column(name = "ordered_at", nullable = false)
-    private LocalDateTime orderedAt;
+    private LocalDateTime orderedAt = LocalDateTime.now();
 
     @Column(name = "total_price", nullable = false, columnDefinition = "INT UNSIGNED")
     private Integer totalPrice;
