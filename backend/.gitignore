@@ -42,3 +42,5 @@ build/
 dist/
 .idea/
 .vscode/
+
+src/main/resources/application.yml
