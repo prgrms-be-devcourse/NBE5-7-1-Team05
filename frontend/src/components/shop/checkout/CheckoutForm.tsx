@@ -225,7 +225,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
           <span>{totalPrice.toLocaleString()}원</span>
         </div>
         <Button
-          className="w-full"
+          className="w-full bg-brown-900 hover:bg-brown-800 "
           size="lg"
           onClick={handleCheckoutClick}
           disabled={cart.length === 0}
