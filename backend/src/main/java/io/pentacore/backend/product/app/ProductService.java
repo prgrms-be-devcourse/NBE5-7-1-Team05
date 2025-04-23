@@ -20,7 +20,7 @@ public class ProductService {
         Product updatedProduct = productRepository.findById(productId)
                 .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
 
-        updatedProduct.addStock(updateRequest.getStock());
+        updatedProduct.changeStock(updateRequest.getStock());
 
         return updatedProduct;
     }

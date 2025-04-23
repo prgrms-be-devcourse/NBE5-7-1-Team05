@@ -37,16 +37,13 @@ public class Product {
     @Column(nullable = false)
     private Integer stock;
 
-    public void addStock(Integer stock) {
-        this.stock = this.stock + stock;
-    }
-
-    public void removeStock(Integer stock) {
-        if( this.stock - stock < 0 ) {
-            throw new IllegalArgumentException("재고가 부족합니다.");
+    public void changeStock(Integer stock) {
+        if(this.stock + stock < 0) {
+            this.stock = 0;
+        } else {
+            this.stock = this.stock + stock;
         }
-
-        this.stock = this.stock - stock;
     }
+
 
 }
