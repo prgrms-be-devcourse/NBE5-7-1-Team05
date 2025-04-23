@@ -16,11 +16,11 @@ public class AdminProductController {
     private final ProductService productService;
 
     @PutMapping("/{productId}")
-    public io.pentacore.backend.config.BaseResponse<Product> updateProductStock(@PathVariable Long productId, @RequestBody UpdateRequest updateRequest) {
+    public BaseResponse<Product> updateProductStock(@PathVariable Long productId, @RequestBody UpdateRequest updateRequest) {
 
         Product updatedProduct = productService.updateProductStock(productId, updateRequest);
 
-        return io.pentacore.backend.config.BaseResponse.ok(updatedProduct);
+        return BaseResponse.ok(updatedProduct);
 
     }
 
