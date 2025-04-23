@@ -1,4 +1,4 @@
-package io.pentacore.backend.product.service;
+package io.pentacore.backend.product.app;
 
 import io.pentacore.backend.product.dao.ProductRepository;
 import io.pentacore.backend.product.domain.Product;

@@ -2,10 +2,8 @@ package io.pentacore.backend.product.api;
 
 
 import io.pentacore.backend.global.unit.BaseResponse;
-import io.pentacore.backend.product.dao.ProductRepository;
 import io.pentacore.backend.product.domain.Product;
-import io.pentacore.backend.product.service.ProductService;
-import lombok.Getter;
+import io.pentacore.backend.product.app.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
