@@ -54,7 +54,10 @@ public class ProductService {
 
     @Transactional
     public void deleteProduct(Long productId) {
-        productRepository.deleteById(productId);
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
+
+        product.softDelete(); // isDeleted = true로 변경
     }
 
     @Transactional(readOnly = true)
