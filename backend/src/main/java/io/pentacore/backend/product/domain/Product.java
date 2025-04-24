@@ -53,6 +53,15 @@ public class Product {
         }
     }
 
+    public void order(int quantity) {
+        if (this.stock - quantity < 0) {
+            throw new IllegalArgumentException(
+                    "'%s' 상품의 재고가 부족합니다 - 현재 수량 : %d, 주문 수량 : %d"
+                            .formatted(name, stock, quantity));
+        }
+        this.stock = this.stock - quantity;
+    }
+
     @Builder
     public Product(long id, Admin admin, String name, String category, Integer price, String imageUrl, Integer stock) {
         // TODO: ID 직접 넣어주는 것 추후 제거
