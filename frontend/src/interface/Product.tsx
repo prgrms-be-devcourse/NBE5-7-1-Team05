@@ -5,4 +5,6 @@ export default interface Product {
   price: number;
   imageUrl: string;
   stock: number;
+  deleted?: boolean;
+  deletedAt?: string;
 }
