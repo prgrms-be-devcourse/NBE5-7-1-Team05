@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Table(name = "products")
@@ -41,9 +43,19 @@ public class Product {
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     public void softDelete() {
         this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
     }
+
+//    public void restore() {
+//        this.isDeleted = false;
+//        this.deletedAt = null;
+//    }
+
 
     public void changeStock(Integer stock) {
         if(this.stock + stock < 0) {

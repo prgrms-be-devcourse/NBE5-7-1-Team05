@@ -4,6 +4,7 @@ import io.pentacore.backend.product.dao.ProductRepository;
 import io.pentacore.backend.product.domain.Product;
 import io.pentacore.backend.product.dto.UpdateRequest;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -58,6 +59,13 @@ public class ProductService {
                 .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
 
         product.softDelete(); // isDeleted = true로 변경
+    }
+
+    @Transactional
+    public void deleteExpiredProducts() {
+        LocalDateTime expiredDate = LocalDateTime.now().minusDays(30);
+        //LocalDateTime expiredDate = LocalDateTime.now().minusMinutes(1); //테스트용
+        productRepository.deleteOldSoftDeletedRecords(expiredDate); // 여기서 expiredDate 넘김
     }
 
     @Transactional(readOnly = true)
