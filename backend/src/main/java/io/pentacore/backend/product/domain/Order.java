@@ -3,6 +3,8 @@ package io.pentacore.backend.product.domain;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "orders")
@@ -28,7 +30,6 @@ public class Order {
     @Column(name = "total_price", nullable = false, columnDefinition = "INT UNSIGNED")
     private Integer totalPrice;
 
-//    상품 목록 생기면 작성
-//    @OneToMany(mappedBy = "order")
-//    private List<OrderProduct> orderProducts = new ArrayList<>();
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<OrderProduct> orderProducts = new ArrayList<>();
 }
