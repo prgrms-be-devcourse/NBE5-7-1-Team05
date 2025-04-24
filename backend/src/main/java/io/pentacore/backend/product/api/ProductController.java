@@ -28,8 +28,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
-
-    //전체 상품 조회
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     public BaseResponse<List<Product>> getAllProduct() {
