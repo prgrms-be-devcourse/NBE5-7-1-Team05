@@ -1,5 +1,7 @@
 package io.pentacore.backend.product.app;
 
+import io.pentacore.backend.global.unit.exception.CustomException;
+import io.pentacore.backend.global.unit.exception.ErrorCode;
 import io.pentacore.backend.product.dao.OrderProductRepository;
 import io.pentacore.backend.product.dao.OrderRepository;
 import io.pentacore.backend.product.dao.ProductRepository;
@@ -30,9 +32,7 @@ public class PaymentService {
         request.getProducts().forEach(product -> {
 
             Product findProduct = productRepository.findById(product.getProductId())
-                    .orElseThrow(() -> new NoSuchElementException(
-                            product.getProductId() + "번 상품은 존재하지 않습니다."
-                    ));
+                    .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND, product.getProductId()));
 
             findProduct.order(product.getQuantity());
 

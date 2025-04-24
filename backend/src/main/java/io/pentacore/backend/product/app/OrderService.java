@@ -1,5 +1,7 @@
 package io.pentacore.backend.product.app;
 
+import io.pentacore.backend.global.unit.exception.CustomException;
+import io.pentacore.backend.global.unit.exception.ErrorCode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -19,7 +21,7 @@ public class OrderService {
     @Transactional
     public void deleteOrder(Long orderId) {
         orderRepository.findById(orderId)
-                .orElseThrow(() -> new NoSuchElementException("주문이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
         orderRepository.deleteById(orderId);
     }
