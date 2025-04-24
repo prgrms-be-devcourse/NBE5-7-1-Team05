@@ -1,9 +1,15 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import logo from "../../assets/grid_and_circle_logo.png";
+import { useAuth } from "@/contexts/AuthContext";
 
 const NavBar = () => {
+  const { isAuthenticated, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur flex justify-center">
       <div className="container flex h-16 items-center justify-between mx-auto px-4">
@@ -31,15 +37,29 @@ const NavBar = () => {
           >
             <Link to="/products">상품 목록</Link>
           </Button>
-          <Button
-            className="bg-stone-100 hover:bg-stone-200 border border-stone-200 text-black"
-            asChild
-          >
-            <Link to="/admin">관리자 로그인</Link>
-          </Button>
-          <Button className="bg-brown-900 hover:bg-brown-800" asChild>
-            <Link to="/signup">관리자 회원가입</Link>
-          </Button>
+          {isAuthenticated ? (
+            <>
+              <Button variant="outline" className="text-black" asChild>
+                <Link to="/admin">관리자 대시보드</Link>
+              </Button>
+              <Button
+                className="bg-brown-900 hover:bg-brown-800"
+                onClick={handleLogout}
+                asChild
+              >
+                <Link to="/">로그아웃</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="outline" className="text-black" asChild>
+                <Link to="/admin/login">관리자 로그인</Link>
+              </Button>
+              <Button className="bg-brown-900 hover:bg-brown-800" asChild>
+                <Link to="/admin/signup">관리자 회원가입</Link>
+              </Button>
+            </>
+          )}
         </nav>
       </div>
     </header>
