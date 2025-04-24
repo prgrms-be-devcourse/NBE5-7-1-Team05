@@ -38,6 +38,13 @@ public class Product {
     @Column(nullable = false)
     private Integer stock;
 
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
+
+    public void softDelete() {
+        this.isDeleted = true;
+    }
+
     public void changeStock(Integer stock) {
         if(this.stock + stock < 0) {
             this.stock = 0;
