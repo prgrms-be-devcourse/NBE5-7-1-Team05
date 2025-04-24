@@ -54,9 +54,7 @@ public class Product {
     }
 
     @Builder
-    public Product(long id, Admin admin, String name, String category, Integer price, String imageUrl, Integer stock) {
-        // TODO: ID 직접 넣어주는 것 추후 제거
-        this.id = id;
+    public Product(Admin admin, String name, String category, Integer price, String imageUrl, Integer stock) {
         this.admin = admin;
         this.name = name;
         this.category = category;
