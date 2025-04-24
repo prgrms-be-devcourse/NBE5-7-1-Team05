@@ -1,5 +1,6 @@
 package io.pentacore.backend.product.domain;
 
+import io.pentacore.backend.product.dto.PaymentRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -34,4 +35,14 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderProduct> orderProducts = new ArrayList<>();
+
+    public static Order from (PaymentRequestDto request) {
+        Order order = new Order();
+        order.email = request.getEmail();
+        order.address = request.getAddress();
+        order.postalCode = request.getPostalCode();
+        order.totalPrice = request.getTotalPrice();
+        order.orderedAt = LocalDateTime.now();
+        return order;
+    }
 }
