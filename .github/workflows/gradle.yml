@@ -1,55 +1,72 @@
-name: Gradle CI # 워크플로우 이름
+name: Gradle CI
+
 on:
   push:
-    branches: [ main, dev ] # master와 dev 브랜치에 push 될 때 실행 
+    branches: [ main, dev ]
   pull_request:
-    branches: [ main, dev ] # master와 dev 브랜치에 PR이 생성될 때 실행 
+    branches: [ main, dev ]
+
 jobs:
-  build: # 첫 번째 job: 빌드 및 테스트
-    runs-on: ubuntu-latest # GitHub에서 제공하는 Ubuntu 가상머신에서 실행
-    permissions:
-      contents: read
-      packages: write 
-    steps:
-      - uses: actions/checkout@v4 # 현재 저장소의 코드를 체크아웃 (clone)
-      - name: Set up JDK 21 # JDK 21 설치
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin' # JDK 배포판
-      - name: Setup Gradle # Gradle 환경 구성 
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          build-root-directory: backend
-
-#테스트는 main에 안오린다고 하셔서 일단 주석 처리 했습니다.
-#      - name: Run tests # 테스트 실행 
-#        run: ./gradlew test
-#        working-directory: backend #  backend 폴더 기준으로 실행
-
-#      - name: Upload test report # 테스트 리포트 업로드
-#        if: always() # 테스트가 실패해도 리포트는 항상 업로드
-
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: junit-test-report # GitHub Actions의 'Artifacts' 항목에 보일 이름
-#          path: backend/build/reports/tests/test # 실제 리포트 경로 (index.html 포함)
-#          include-hidden-files: true
-
-
-
-  dependency-submission: # 두 번째 job: 의존성 그래프 제출
+  build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # GitHub 의존성 그래프 제출을 위해 write 권한 필요
+      contents: read
+      packages: write
+
     steps:
-      - uses: actions/checkout@v4 # 소스 코드 체크아웃
-      - name: Set up JDK 21 # 동일하게 JDK 21 설정
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
-      - name: Generate and submit dependency graph # 의존성 정보 분석 후 GitHub에 제출
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          build-root-directory: backend
+
+      - name: Create test application.yml
+        run: |
+          mkdir -p backend/src/test/resources
+          echo "spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true" > backend/src/test/resources/application.yml
+      - name: Run tests
+        run: ./gradlew test
+        working-directory: backend
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-test-report
+          path: backend/build/reports/tests/test
+          include-hidden-files: true
+
+  dependency-submission:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Generate and submit dependency graph
         uses: gradle/actions/dependency-submission@v4
         with:
           build-root-directory: backend
