@@ -17,7 +17,7 @@ public class AdminContextService {
     public Long getCurrentAdminId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null || (auth.getPrincipal() instanceof AdminDetails)) {
-            BaseResponse.error("인증된 관리자가 아닙니다", HttpStatus.ACCEPTED);
+            BaseResponse.error("인증된 관리자가 아닙니다", HttpStatus.UNAUTHORIZED);
 
         }
         AdminDetails adminDetails = (AdminDetails) auth.getPrincipal();
