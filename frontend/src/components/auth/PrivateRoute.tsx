@@ -8,7 +8,6 @@ interface PrivateRouteProps {
 
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
-  // admin 페이지로 데이터 전달
   const location = useLocation();
 
   if (isLoading) {

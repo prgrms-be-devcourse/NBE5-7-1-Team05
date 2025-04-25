@@ -9,9 +9,8 @@ export const authService = {
       credentials
     );
 
-    const accessToken =
-      response.headers["access-token"] || response.headers["authorization"];
-    const refreshToken = response.headers["refresh-token"];
+    const accessToken = response.headers["authorization"];
+    const refreshToken = response.headers["refresh"];
 
     return {
       accessToken: accessToken?.replace("Bearer ", ""),
