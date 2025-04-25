@@ -5,12 +5,12 @@ import lombok.Getter;
 
 @Getter
 public class ProductResponseDto {
-    private Long id;
-    private String name;
-    private String category;
-    private Integer price;
-    private String imageUrl;
-    private Integer stock;
+    private final Long id;
+    private final String name;
+    private final String category;
+    private final Integer price;
+    private final String imageUrl;
+    private final Integer stock;
 
     public ProductResponseDto(Product product) {
         this.id = product.getId();

@@ -5,11 +5,11 @@ import lombok.Getter;
 
 @Getter
 public class OrderProductDto {
-    private Long orderProductId;
-    private Long productId;
-    private String productName;
-    private Integer price;
-    private Integer quantity;
+    private final Long orderProductId;
+    private final Long productId;
+    private final String productName;
+    private final Integer price;
+    private final Integer quantity;
 
     private OrderProductDto(Long orderProductId, Long productId, String productName, Integer price, Integer quantity) {
         this.orderProductId = orderProductId;
