@@ -65,9 +65,5 @@ public class AdminDetails implements UserDetails {
         return admindetails;
     }
 
-
-//    public Admin getAdmin() {
-//        new Admin()
-//    }
 }
 
