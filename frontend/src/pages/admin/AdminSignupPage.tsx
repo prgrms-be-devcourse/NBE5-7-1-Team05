@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -19,9 +19,9 @@ import {
   validateAdminCode,
   validateSignupForm,
 } from "../../utils/validation/CheckoutValidation";
-import axios from "axios";
 import SignupForm from "@/interface/SignupForm";
 import { FormErrors } from "@/interface/FormErrors";
+import { authService } from "@/utils/api/authService";
 
 export default function AdminSignupPage() {
   const navigate = useNavigate();
@@ -54,7 +54,7 @@ export default function AdminSignupPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       [id]: value,
     }));
@@ -74,7 +74,7 @@ export default function AdminSignupPage() {
             value,
             formData.confirmPassword
           );
-          setErrors((prev) => ({
+          setErrors((prev: any) => ({
             ...prev,
             confirmPassword: confirmValidation.isValid
               ? undefined
@@ -92,7 +92,7 @@ export default function AdminSignupPage() {
         return;
     }
 
-    setErrors((prev) => ({
+    setErrors((prev: any) => ({
       ...prev,
       [id]: validation.isValid ? undefined : validation.message,
     }));
@@ -118,23 +118,15 @@ export default function AdminSignupPage() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(
-        "http://localhost:8080/signup",
-        {
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          adminCode: formData.adminCode,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await authService.signup({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        adminCode: formData.adminCode,
+      });
 
       console.log(response);
-      // TODO: 승중님 회원가입 완료하면 로그인 페이지로 이동
+
       navigate("/admin/login");
     } catch (error: any) {
       if (error.response?.status === 400) {
@@ -146,12 +138,12 @@ export default function AdminSignupPage() {
           setApiError("입력한 정보를 확인해주세요.");
         }
       } else if (error.response?.status === 409) {
-        setErrors((prev) => ({
+        setErrors((prev: any) => ({
           ...prev,
           email: "이미 사용 중인 이메일입니다.",
         }));
       } else if (error.response?.status === 403) {
-        setErrors((prev) => ({
+        setErrors((prev: any) => ({
           ...prev,
           adminCode: "유효하지 않은 관리자 코드입니다.",
         }));

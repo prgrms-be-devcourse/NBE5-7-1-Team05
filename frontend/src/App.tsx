@@ -5,6 +5,7 @@ import AdminSignupPage from "./pages/admin/AdminSignupPage";
 import AdminPage from "./pages/admin/AdminPage";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import { AuthProvider } from "./contexts/AuthContext";
+import PrivateRoute from "./components/auth/PrivateRoute";
 
 function App() {
   return (
@@ -18,7 +19,14 @@ function App() {
               <Route path="/products" element={<ShoppingCartPage />} />
               <Route path="/admin/signup" element={<AdminSignupPage />} />
               <Route path="/admin/login" element={<AdminLoginPage />} />
-              <Route path="/admin" element={<AdminPage />} />
+              <Route
+                path="/admin"
+                element={
+                  <PrivateRoute>
+                    <AdminPage />
+                  </PrivateRoute>
+                }
+              />
             </Routes>
           </main>
         </div>
