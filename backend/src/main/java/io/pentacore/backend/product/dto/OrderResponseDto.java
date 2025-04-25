@@ -10,13 +10,13 @@ import java.util.List;
 
 @Getter
 public class OrderResponseDto {
-    private Long orderId;
-    private String email;
-    private String address;
-    private String postalCode;
-    private LocalDateTime orderedAt = LocalDateTime.now();
-    private Integer totalPrice;
-    private List<OrderProductDto> orderProducts;
+    private final Long orderId;
+    private final String email;
+    private final String address;
+    private final String postalCode;
+    private final LocalDateTime orderedAt;
+    private final Integer totalPrice;
+    private final List<OrderProductDto> orderProducts;
 
     private OrderResponseDto(Long orderId, String email, String address, String postalCode, LocalDateTime orderedAt,
                             Integer totalPrice, List<OrderProductDto> orderProducts) {
