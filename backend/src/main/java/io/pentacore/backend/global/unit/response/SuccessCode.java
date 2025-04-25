@@ -13,7 +13,7 @@ public enum SuccessCode {
 
     ADDED_SUCCESS(201, "추가가 정상적으로 수행되었습니다."),
 
-    DELETED_SUCCESS(204, "삭제가 정상적으로 수행되었습니다."),
+    DELETED_SUCCESS(204, "삭제가 정상적으로 수행되었습니다.");
 
     private final int status;
     private final String message;
