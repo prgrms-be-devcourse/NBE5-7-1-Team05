@@ -23,7 +23,7 @@ public class Admin {
     @Column(length=40, nullable=false)
     private String email;
 
-    @Column(length=40, nullable=false)
+    @Column(nullable=false)
     private String password;
 
     // TODO : 나중에 지우기 (테스트 용)
