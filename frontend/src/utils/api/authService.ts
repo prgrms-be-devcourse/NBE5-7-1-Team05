@@ -8,7 +8,16 @@ export const authService = {
       import.meta.env.VITE_API_LOGIN,
       credentials
     );
-    return response.data;
+
+    const accessToken =
+      response.headers["access-token"] || response.headers["authorization"];
+    const refreshToken = response.headers["refresh-token"];
+
+    return {
+      accessToken: accessToken?.replace("Bearer ", ""),
+      refreshToken,
+      user: response.data.user || response.data,
+    };
   },
 
   signup: async (signupData: Omit<SignupForm, "confirmPassword">) => {
