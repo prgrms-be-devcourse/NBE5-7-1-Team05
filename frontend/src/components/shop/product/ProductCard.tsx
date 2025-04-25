@@ -2,6 +2,7 @@ import Product from "@/interface/Product";
 import React from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import logo from "../../../assets/grid_and_circle_logo.png";
 
 interface ProductCardProps {
   product: Product;
@@ -23,6 +24,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
           src={product.imageUrl}
           alt={product.name}
           className="h-full w-full object-cover transition-transform"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = logo;
+          }}
         />
       </div>
       <CardContent>
