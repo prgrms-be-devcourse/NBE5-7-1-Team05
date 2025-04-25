@@ -1,4 +1,4 @@
-package io.pentacore.backend.admin.comfig;
+package io.pentacore.backend.admin.config;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

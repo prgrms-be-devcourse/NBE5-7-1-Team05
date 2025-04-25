@@ -1,4 +1,4 @@
-package io.pentacore.backend.admin.comfig;
+package io.pentacore.backend.admin.config;
 
 import io.pentacore.backend.admin.app.AdminService;
 import io.pentacore.backend.admin.app.JwtTokenProvider;
