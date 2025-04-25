@@ -1,6 +1,9 @@
 package io.pentacore.backend.product.api;
 
 import io.pentacore.backend.global.unit.BaseResponse;
+import io.pentacore.backend.global.unit.exception.CustomException;
+import io.pentacore.backend.global.unit.exception.ErrorCode;
+import io.pentacore.backend.global.unit.response.SuccessCode;
 import io.pentacore.backend.global.util.EmailValidator;
 import io.pentacore.backend.product.app.OrderService;
 import io.pentacore.backend.product.dto.OrderResponseDto;
@@ -18,28 +21,27 @@ public class OrderController {
     private final OrderService orderService;
 
     @DeleteMapping("/orders/{orderId}")
-    public BaseResponse<?> deleteOrder(@PathVariable Long orderId) {
+    public ResponseEntity<BaseResponse<?>> deleteOrder(@PathVariable Long orderId) {
         orderService.deleteOrder(orderId);
 
-        return BaseResponse.ok();
+        return BaseResponse.ok(SuccessCode.DELETED_SUCCESS.getMessage(), SuccessCode.DELETED_SUCCESS.getStatus());
     }
 
 
     @GetMapping("/orders")
-    public ResponseEntity<BaseResponse<?>> getOrdersByEmail(
+    public ResponseEntity<BaseResponse<List<OrderResponseDto>>> getOrdersByEmail(
             @RequestParam String email) {
 
-        if (!EmailValidator.isValid(email)) {  // 변경된 부분
-            return ResponseEntity.badRequest()
-                    .body(BaseResponse.error("이메일 형식이 올바르지 않습니다."));
+        if (!EmailValidator.isValid(email)) {
+            throw new CustomException(ErrorCode.INVALID_FORMAT_EMAIL);
         }
 
         List<OrderResponseDto> orders = orderService.getOrdersByEmail(email);
 
         if (orders.isEmpty()) {
-            return ResponseEntity.ok(BaseResponse.error("해당 이메일로 주문 내역이 없습니다."));
+            throw new CustomException(ErrorCode.ORDER_FROM_USER_NOT_FOUND);
         }
 
-        return ResponseEntity.ok(BaseResponse.ok(orders));
+        return BaseResponse.ok(SuccessCode.GET_SUCCESS.getMessage(), orders, SuccessCode.GET_SUCCESS.getStatus());
     }
 }
