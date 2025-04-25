@@ -8,7 +8,7 @@ import io.pentacore.backend.admin.domain.RefreshToken;
 import io.pentacore.backend.admin.dto.AdminDetails;
 import io.pentacore.backend.admin.dto.LoginRequestDto;
 import io.pentacore.backend.admin.dto.LoginResponseDto;
-import io.pentacore.backend.admin.dto.SingUpRequestDto;
+import io.pentacore.backend.admin.dto.SignUpRequestDto;
 import io.pentacore.backend.global.unit.BaseResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
@@ -37,7 +37,7 @@ public class AdminService {
 
     //암호화 후 db에 회원가입 정보 저장
     //BaseResponse로 지정한 내용에 http 상태 코드를 수정 후 다시 ResponseEntity로 감싸서 보냄
-    public ResponseEntity<BaseResponse<?>> save(SingUpRequestDto dto) {
+    public ResponseEntity<BaseResponse<?>> save(SignUpRequestDto dto) {
         if (adminRepository.findByEmail(dto.getEmail()).isPresent()) {
             return BaseResponse.error("이미 존재하는 이메일입니다.", HttpStatus.CONFLICT); //409 반환
         }
