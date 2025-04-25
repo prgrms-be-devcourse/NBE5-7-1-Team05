@@ -33,10 +33,13 @@ jobs:
 
       - name: Upload test report # 테스트 리포트 업로드
         if: always() # 테스트가 실패해도 리포트는 항상 업로드
-        uses: actions/upload-artifact@v3.1.2
+        uses: actions/upload-artifact@v4
         with:
           name: junit-test-report # GitHub Actions의 'Artifacts' 항목에 보일 이름
           path: backend/build/reports/tests/test # 실제 리포트 경로 (index.html 포함)
+          include-hidden-files: true
+
+    
 
   dependency-submission: # 두 번째 job: 의존성 그래프 제출
     runs-on: ubuntu-latest
