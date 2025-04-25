@@ -1,9 +1,9 @@
 package io.pentacore.backend.global.unit.exception;
 
-import io.pentacore.backend.global.unit.ApiResponse;
 import io.pentacore.backend.global.unit.BaseResponse;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,21 +14,19 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler( {CustomException.class })
-    protected ResponseEntity<ApiResponse<?>> handleCustomException(CustomException ex) {
+    protected ResponseEntity<BaseResponse<?>> handleCustomException(CustomException ex) {
         ErrorCode errorCode = ex.getErrorCode();
         Long targetId = ex.getTargetId();
 
         if(targetId != -1L) {
-            return ResponseEntity.status(errorCode.getStatus())
-                    .body(ApiResponse.error(targetId + "번 상품은 " + errorCode.getMessage()));
+            return BaseResponse.error(targetId + "번 상품은 " + errorCode.getMessage(), errorCode.getStatus());
         }
 
-        return ResponseEntity.status(errorCode.getStatus())
-                .body(ApiResponse.error(errorCode.getStatus(), errorCode.getMessage()));
+        return BaseResponse.error(errorCode.getMessage(), errorCode.getStatus());
     }
 
     @ExceptionHandler( {MethodArgumentNotValidException.class} )
-    protected ResponseEntity<ApiResponse<?>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+    protected ResponseEntity<BaseResponse<?>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
 
         List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
 
@@ -38,14 +36,12 @@ public class GlobalExceptionHandler {
 
         ErrorCode errorCode = ErrorCode.INVALID_REQUEST;
 
-        return ResponseEntity.status(errorCode.getStatus())
-                .body(ApiResponse.error(errorCode.getStatus(), errorMessage));
+        return BaseResponse.error(errorMessage, errorCode.getStatus());
     }
 
     @ExceptionHandler( {Exception.class} )
-    protected ResponseEntity<ApiResponse<?>> handleException(Exception ex) {
-        return ResponseEntity.status(ErrorCode.INTERNAL_SERVER_ERROR.getStatus())
-                .body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR.getStatus(), ErrorCode.INTERNAL_SERVER_ERROR.getMessage()));
+    protected ResponseEntity<BaseResponse<?>> handleException(Exception ex) {
+        return BaseResponse.error(ErrorCode.INTERNAL_SERVER_ERROR.getMessage(), ErrorCode.INTERNAL_SERVER_ERROR.getStatus());
     }
 
 }
