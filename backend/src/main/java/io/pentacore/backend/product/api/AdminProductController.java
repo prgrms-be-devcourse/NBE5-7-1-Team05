@@ -34,7 +34,7 @@ public class AdminProductController {
     }
 
     @PutMapping("/{productId}")
-    public ResponseEntity<BaseResponse<Product>> updateProductStock(@PathVariable Long productId, @RequestBody UpdateRequest updateRequest) {
+    public ResponseEntity<BaseResponse<Product>> updateProductStock(@PathVariable Long productId, @Valid @RequestBody UpdateRequest updateRequest) {
 
         Product updatedProduct = productService.updateProductStock(productId, updateRequest);
 
