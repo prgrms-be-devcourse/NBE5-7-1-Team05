@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import LoginForm from "@/interface/LoginForm";
 import { useAuth } from "@/contexts/AuthContext";
-import { authService } from "@/utils/api/authService";
+import api from "@/utils/api/axiosConfig";
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
@@ -37,32 +37,35 @@ export default function AdminLoginPage() {
     }
   };
 
+  // 로그인 성공 시 토큰 저장
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
     try {
-      // 응답값 = response.data
-      const response = await authService.login(formData);
+      const response = await api.post(import.meta.env.VITE_API_LOGIN, formData);
 
-      if (response.accessToken && response.refreshToken) {
-        localStorage.setItem("adminToken", response.accessToken);
-        localStorage.setItem("refreshToken", response.refreshToken);
-        login(response.accessToken, response.user);
+      // 이 부분을 설정하신 헤더에 맞게 수정하시면 됩니다. "access-token"이 아니면 설정한 값으로 변경
+      const accessToken =
+        response.headers["access-token"] || response.headers["authorization"];
+      const refreshToken = response.headers["refresh-token"];
+
+      const user = response.data.user || response.data;
+
+      if (accessToken && refreshToken) {
+        const cleanAccessToken = accessToken.replace("Bearer ", "");
+
+        localStorage.setItem("adminToken", cleanAccessToken);
+        localStorage.setItem("refreshToken", refreshToken);
+        login(cleanAccessToken, user);
+      } else {
+        throw new Error("토큰을 받지 못했습니다.");
       }
 
       navigate("/admin");
     } catch (error: any) {
-      if (error.response?.status === 401) {
-        setError("이메일 또는 비밀번호가 올바르지 않습니다.");
-      } else if (error.response?.data?.message) {
-        setError(error.response.data.message);
-      } else if (error.request) {
-        setError("서버와 통신할 수 없습니다. 잠시 후 다시 시도해주세요.");
-      } else {
-        setError("로그인 중 오류가 발생했습니다. 다시 시도해주세요.");
-      }
+      console.log(error);
     } finally {
       setIsLoading(false);
     }
