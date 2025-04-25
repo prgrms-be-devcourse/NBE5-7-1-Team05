@@ -3,6 +3,7 @@ package io.pentacore.backend.product.api;
 import io.pentacore.backend.global.unit.BaseResponse;
 import io.pentacore.backend.global.unit.exception.CustomException;
 import io.pentacore.backend.global.unit.exception.ErrorCode;
+import io.pentacore.backend.global.unit.response.SuccessCode;
 import io.pentacore.backend.global.util.EmailValidator;
 import io.pentacore.backend.product.app.OrderService;
 import io.pentacore.backend.product.dto.OrderResponseDto;
@@ -20,15 +21,15 @@ public class OrderController {
     private final OrderService orderService;
 
     @DeleteMapping("/orders/{orderId}")
-    public BaseResponse<?> deleteOrder(@PathVariable Long orderId) {
+    public ResponseEntity<BaseResponse<?>> deleteOrder(@PathVariable Long orderId) {
         orderService.deleteOrder(orderId);
 
-        return BaseResponse.ok();
+        return BaseResponse.ok(SuccessCode.DELETED_SUCCESS.getMessage(), SuccessCode.DELETED_SUCCESS.getStatus());
     }
 
 
     @GetMapping("/orders")
-    public ResponseEntity<BaseResponse<?>> getOrdersByEmail(
+    public ResponseEntity<BaseResponse<List<OrderResponseDto>>> getOrdersByEmail(
             @RequestParam String email) {
 
         if (!EmailValidator.isValid(email)) {
@@ -41,6 +42,6 @@ public class OrderController {
             throw new CustomException(ErrorCode.ORDER_FROM_USER_NOT_FOUND);
         }
 
-        return ResponseEntity.ok(BaseResponse.ok(orders));
+        return BaseResponse.ok(SuccessCode.GET_SUCCESS.getMessage(), orders, SuccessCode.GET_SUCCESS.getStatus());
     }
 }

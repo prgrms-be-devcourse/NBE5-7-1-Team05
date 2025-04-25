@@ -2,6 +2,7 @@ package io.pentacore.backend.product.api;
 
 
 import io.pentacore.backend.global.unit.BaseResponse;
+import io.pentacore.backend.global.unit.response.SuccessCode;
 import io.pentacore.backend.product.domain.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,11 +31,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
-    @ResponseStatus(HttpStatus.OK)
+
     @GetMapping
-    public BaseResponse<List<Product>> getAllProduct() {
+    public ResponseEntity<BaseResponse<List<Product>>> getAllProduct() {
         List<Product> products = productService.getAllProduct();
-        return BaseResponse.ok(products);
+
+        return BaseResponse.ok(SuccessCode.GET_SUCCESS.getMessage(), products, SuccessCode.GET_SUCCESS.getStatus());
     }
 
 }
