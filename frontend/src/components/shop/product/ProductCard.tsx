@@ -2,6 +2,7 @@ import Product from "@/interface/Product";
 import React from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import logo from "../../../assets/grid_and_circle_logo.png";
 
 interface ProductCardProps {
   product: Product;
@@ -23,6 +24,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
           src={product.imageUrl}
           alt={product.name}
           className="h-full w-full object-cover transition-transform"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = logo;
+          }}
         />
       </div>
       <CardContent>
@@ -32,7 +36,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           {product.price.toLocaleString()}원
         </p>
       </CardContent>
-      <CardFooter className="bg-gray-50 p-4 flex justify-between">
+      <CardFooter className="bg-stone-50 p-4 flex justify-between">
         <Button
           variant="outline"
           size="sm"
@@ -42,7 +46,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
           -
         </Button>
         <span>{quantity}</span>
-        <Button variant="default" size="sm" onClick={() => onAdd(product)}>
+        <Button
+          className="bg-brown-900 hover:bg-brown-800"
+          size="sm"
+          onClick={() => onAdd(product)}
+        >
           +
         </Button>
       </CardFooter>

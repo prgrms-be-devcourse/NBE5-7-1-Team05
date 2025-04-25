@@ -1,39 +1,39 @@
-import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import Product from "@/interface/Product";
 import CartItem from "@/interface/CartItem";
 import ProductList from "../../components/shop/product/ProductList";
 import CheckoutForm from "../../components/shop/checkout/CheckoutForm";
 
 const ShoppingCartPage = () => {
-  const products: Product[] = [
-    {
-      id: 1,
-      name: "콜롬비아 나리뇨",
-      price: 5000,
-      category: "커피콩",
-      imageUrl: "https://i.imgur.com/HKOFQYa.jpeg",
-    },
-    {
-      id: 2,
-      name: "게이샤",
-      price: 5000,
-      category: "커피콩",
-      imageUrl: "https://i.imgur.com/HKOFQYa.jpeg",
-    },
-    {
-      id: 3,
-      name: "과테말라",
-      price: 5000,
-      category: "커피콩",
-      imageUrl: "https://i.imgur.com/HKOFQYa.jpeg",
-    },
-  ];
-
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [zipCode, setZipCode] = useState("");
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get("http://localhost:8080/products");
+        const activeProducts = response.data.data.filter(
+          (product: Product) => !product.deleted
+        );
+        setProducts(activeProducts);
+        setError(null);
+      } catch (err) {
+        setError("상품을 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.");
+        console.error("상품 목록 조회 실패:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const addToCart = (product: Product) => {
     const existingItem = cart.find((item) => item.product.id === product.id);
@@ -82,9 +82,37 @@ const ShoppingCartPage = () => {
     setZipCode("");
   };
 
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-4 mt-4">
+        <h1 className="text-2xl font-semibold mb-6">상품 대시보드</h1>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brown-900"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-4 mt-4">
+        <h1 className="text-2xl font-semibold mb-6">상품 대시보드</h1>
+        <div className="text-center p-8 bg-red-50 rounded-lg">
+          <p className="text-red-600">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-brown-900 text-white rounded hover:bg-brown-800"
+          >
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">상품 대시보드</h1>
+    <div className="container mx-auto p-4 mt-4">
+      <h1 className="text-2xl font-semibold mb-6">상품 대시보드</h1>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <ProductList

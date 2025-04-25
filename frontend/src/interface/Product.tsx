@@ -4,4 +4,7 @@ export default interface Product {
   category: string;
   price: number;
   imageUrl: string;
+  stock: number;
+  deleted?: boolean;
+  deletedAt?: string;
 }

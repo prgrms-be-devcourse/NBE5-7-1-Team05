@@ -1,9 +1,14 @@
 package io.pentacore.backend.product.domain;
 
+import io.pentacore.backend.product.dto.PaymentRequestDto;
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+@Getter
 @Entity
 @Table(name = "orders")
 public class Order {
@@ -28,7 +33,16 @@ public class Order {
     @Column(name = "total_price", nullable = false, columnDefinition = "INT UNSIGNED")
     private Integer totalPrice;
 
-//    상품 목록 생기면 작성
-//    @OneToMany(mappedBy = "order")
-//    private List<OrderProduct> orderProducts = new ArrayList<>();
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<OrderProduct> orderProducts = new ArrayList<>();
+
+    public static Order from (PaymentRequestDto request) {
+        Order order = new Order();
+        order.email = request.getEmail();
+        order.address = request.getAddress();
+        order.postalCode = request.getPostalCode();
+        order.totalPrice = request.getTotalPrice();
+        order.orderedAt = LocalDateTime.now();
+        return order;
+    }
 }
