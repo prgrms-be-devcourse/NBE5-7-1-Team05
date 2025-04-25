@@ -27,6 +27,7 @@ public class ProductService {
 
     @Transactional
     public ProductResponseDto addProduct(Long adminId, ProductRequestDto req) {
+
         Admin admin = adminRepository.findById(adminId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ADMIN_NOT_FOUND));
 

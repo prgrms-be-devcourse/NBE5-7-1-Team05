@@ -20,15 +20,11 @@ import org.springframework.web.bind.annotation.*;
 public class AdminProductController {
     private final ProductService productService;
 
-    @PostMapping
-    public ResponseEntity<BaseResponse<ProductResponseDto>> addProduct(
-            @Valid
-            @RequestBody
-            ProductRequestDto req
-    ) {
+    @PostMapping        //상품 추가
+    public ResponseEntity<BaseResponse<ProductResponseDto>> addProduct(@Valid @RequestBody ProductRequestDto req) {
         // TODO : 나중에 지우고 제대로 할당하기 (현재는 테스팅 때문에 하드코딩함.)
         Long adminId = 1L;
-        ProductResponseDto res = productService.addProduct(adminId, req);
+        ProductResponseDto res = productService.addProduct(adminId,req);
 
         return BaseResponse.ok(SuccessCode.ADDED_SUCCESS.getMessage(), res,  SuccessCode.ADDED_SUCCESS.getStatus());
     }
