@@ -26,6 +26,7 @@ public class PaymentService {
 
     @Transactional
     public void addOrder(PaymentRequestDto request) {
+        request.validateEmail();
         Order order = Order.from(request);
         List<OrderProduct> orderProducts = order.getOrderProducts();
 

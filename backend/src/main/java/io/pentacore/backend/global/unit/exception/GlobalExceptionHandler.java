@@ -25,6 +25,16 @@ public class GlobalExceptionHandler {
         return BaseResponse.error(errorCode.getMessage(), errorCode.getStatus());
     }
 
+    @ExceptionHandler({ShortInStockException.class})
+    protected ResponseEntity<BaseResponse<?>> handleShortInStockException(ShortInStockException ex) {
+        ErrorCode errorCode = ex.getErrorCode();
+
+        String errorMessage = "'" + ex.getProductName() + "' 상품의 재고가 부족합니다. "
+                + "현재 수량 : " + ex.getStoredQuantity() +", 주문 수량 : " + ex.getRequestedQuantity();
+
+        return BaseResponse.error(errorMessage, errorCode.getStatus());
+    }
+
     @ExceptionHandler( {MethodArgumentNotValidException.class} )
     protected ResponseEntity<BaseResponse<?>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
 

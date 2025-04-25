@@ -1,6 +1,9 @@
 package io.pentacore.backend.product.domain;
 
 import io.pentacore.backend.admin.domain.Admin;
+import io.pentacore.backend.global.unit.exception.CustomException;
+import io.pentacore.backend.global.unit.exception.ErrorCode;
+import io.pentacore.backend.global.unit.exception.ShortInStockException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -67,9 +70,7 @@ public class Product {
 
     public void order(int quantity) {
         if (this.stock - quantity < 0) {
-            throw new IllegalArgumentException(
-                    "'%s' 상품의 재고가 부족합니다 - 현재 수량 : %d, 주문 수량 : %d"
-                            .formatted(name, stock, quantity));
+            throw new ShortInStockException(ErrorCode.NOT_ENOUGH_STOCK, this.name, quantity, this.stock);
         }
         this.stock = this.stock - quantity;
     }

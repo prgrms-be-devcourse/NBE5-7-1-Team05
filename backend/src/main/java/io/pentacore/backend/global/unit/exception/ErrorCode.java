@@ -10,6 +10,7 @@ public enum ErrorCode {
 
     INVALID_REQUEST(400, "요청 데이터가 올바르지 않습니다."),
     INVALID_FORMAT_EMAIL(400, "이메일 형식이 올바르지 않습니다."),
+    NOT_ENOUGH_STOCK(400, "재고가 부족합니다."),
 
     ADMIN_NOT_FOUND(404, "존재하지 않는 관리자입니다."),
     PRODUCT_NOT_FOUND(404, "존재하지 않는 상품입니다."),
