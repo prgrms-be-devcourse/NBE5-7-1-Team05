@@ -46,11 +46,10 @@ export default function AdminLoginPage() {
     try {
       const response = await api.post(import.meta.env.VITE_API_LOGIN, formData);
 
-      const accessToken = response.headers["authorization"];
-      const refreshToken = response.headers["refresh"];
-
-      console.log(accessToken);
-      console.log(refreshToken);
+      // 이 부분을 설정하신 헤더에 맞게 수정하시면 됩니다. "access-token"이 아니면 설정한 값으로 변경
+      const accessToken =
+        response.headers["access-token"] || response.headers["authorization"];
+      const refreshToken = response.headers["refresh-token"];
 
       const user = response.data.user || response.data;
 
