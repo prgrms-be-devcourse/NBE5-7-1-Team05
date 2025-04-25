@@ -2,23 +2,36 @@ package io.pentacore.backend.global.unit;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 @Getter
-@AllArgsConstructor(staticName = "of")
+@AllArgsConstructor
 public class BaseResponse<T> {
     private int status;
     private String message;
     private T data;
 
-    public static <T> BaseResponse<T> ok(T data) {
-        return new BaseResponse<>(200, "성공", data);
+    //성공 메시지만 반환
+    public static ResponseEntity<BaseResponse<?>> ok(String message,HttpStatus status) {
+        return ResponseEntity.status(status)
+                .body(new BaseResponse<>(status.value(), message, null));
     }
 
-    public static BaseResponse<?> ok() {
-        return new BaseResponse<>(200, "성공", null);
+    //성공 메시지와 데이터 반환
+    public static <T> ResponseEntity<BaseResponse<T>> ok(String message, T data, HttpStatus status) {
+        return ResponseEntity.status(status)
+                .body(new BaseResponse<>(status.value(), message, data));
     }
 
-    public static BaseResponse<?> error(String message) {
-        return new BaseResponse<>(400, message, null);
+    //에러 메시지만 반환
+    public static ResponseEntity<BaseResponse<?>> error(String message, HttpStatus status) {
+        return ResponseEntity.status(status)
+                .body(new BaseResponse<>(status.value(), message, null));
+    }
+    //에러 메시지와 데이터를 반환
+    public static <T> ResponseEntity<BaseResponse<T>> error(String message, T data, HttpStatus status) {
+        return ResponseEntity.status(status)
+                .body(new BaseResponse<>(status.value(), message, data));
     }
 }
