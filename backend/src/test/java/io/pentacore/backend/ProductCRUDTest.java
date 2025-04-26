@@ -27,7 +27,7 @@ class ProductCRUDTest extends MockMvcTestBase{
 
     @BeforeEach
     void setUp() {
-        admin = adminRepository.findById(1L).get();
+        admin = adminRepository.findAll().getFirst();
     }
 
     @Test
