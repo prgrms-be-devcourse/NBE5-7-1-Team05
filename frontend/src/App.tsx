@@ -6,6 +6,7 @@ import AdminPage from "./pages/admin/AdminPage";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import { AuthProvider } from "./contexts/AuthContext";
 import PrivateRoute from "./components/auth/PrivateRoute";
+import PurchaseHistory from "./pages/PurchaseHistory";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
             <Routes>
               <Route path="/" element={<ShoppingCartPage />} />
               <Route path="/products" element={<ShoppingCartPage />} />
+              <Route path="/purchase-history" element={<PurchaseHistory />} />
               <Route path="/admin/signup" element={<AdminSignupPage />} />
               <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route
