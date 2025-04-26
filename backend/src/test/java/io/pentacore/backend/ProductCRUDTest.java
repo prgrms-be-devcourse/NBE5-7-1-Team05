@@ -1,6 +1,7 @@
 package io.pentacore.backend;
 
 import io.pentacore.backend.admin.domain.Admin;
+import io.pentacore.backend.global.template.MockMvcTestBase;
 import io.pentacore.backend.product.domain.Product;
 import io.pentacore.backend.product.dto.ProductRequestDto;
 import io.pentacore.backend.product.dto.UpdateRequest;
@@ -20,15 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Slf4j
-class ProductCRUDTest extends MockMvcTestBase{
-
-    private Admin admin;
-    private final Random random = new Random();
-
-    @BeforeEach
-    void setUp() {
-        admin = adminRepository.findAll().getFirst();
-    }
+class ProductCRUDTest extends MockMvcTestBase {
 
     @Test
     @DisplayName("상품 추가")

@@ -1,6 +1,7 @@
 package io.pentacore.backend;
 
 import io.pentacore.backend.admin.domain.Admin;
+import io.pentacore.backend.global.template.MockMvcTestBase;
 import io.pentacore.backend.product.domain.Order;
 import io.pentacore.backend.product.domain.Product;
 import io.pentacore.backend.product.dto.PaymentRequestDto;
@@ -25,14 +26,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @Slf4j
 public class OrderCRUDTest extends MockMvcTestBase {
-
-    private static final Random random = new Random();
-    private Admin admin;
-
-    @BeforeEach
-    void setUp() {
-        admin = adminRepository.findAll().getFirst();
-    }
 
     @Test
     @DisplayName("단일 상품에 대한 주문 결제")
