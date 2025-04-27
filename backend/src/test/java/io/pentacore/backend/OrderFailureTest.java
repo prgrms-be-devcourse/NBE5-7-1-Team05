@@ -93,9 +93,8 @@ public class OrderFailureTest extends UserMockMvcTestBase {
 
         // when & then
         mockMvc.perform(
-                get("/orders/?email=" + email)
+                get("/orders?email=" + email)
         ).andExpect(status().isNotFound());
-        // TODO: 500 에러 발생함
 
     }
 
