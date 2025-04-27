@@ -7,84 +7,13 @@ import { PurchaseTable } from "@/components/history/PurchaseTable";
 import { PurchaseFilters } from "@/components/history/PurchaseFilters";
 import { PurchaseSummaryCards } from "@/components/history/PurchaseSummaryCards";
 import { CancelledPurchases } from "@/components/history/CancelledPurchases";
-import { Purchase } from "@/interface/Purchase";
-
-const mockPurchases: Purchase[] = [
-  {
-    id: "ORD-001",
-    productName: "Wireless Headphones",
-    price: 129990,
-    purchaseDate: "2025-04-26",
-    purchaseTime: "13:30:00",
-    status: "processing",
-    quantity: 1,
-    is_deleted: false,
-  },
-  {
-    id: "ORD-002",
-    productName: "Smart Watch",
-    price: 199990,
-    purchaseDate: "2025-04-26",
-    purchaseTime: "10:15:00",
-    status: "processing",
-    quantity: 1,
-    is_deleted: false,
-  },
-  {
-    id: "ORD-003",
-    productName: "Laptop Stand",
-    price: 39990,
-    purchaseDate: "2025-04-25",
-    purchaseTime: "15:45:00",
-    status: "delivered",
-    quantity: 2,
-    is_deleted: false,
-  },
-  {
-    id: "ORD-004",
-    productName: "Bluetooth Speaker",
-    price: 79990,
-    purchaseDate: "2025-04-24",
-    purchaseTime: "11:00:00",
-    status: "delivered",
-    quantity: 1,
-    is_deleted: true,
-  },
-  {
-    id: "ORD-005",
-    productName: "USB-C Hub",
-    price: 49990,
-    purchaseDate: "2025-04-26",
-    purchaseTime: "13:30:00",
-    status: "processing",
-    quantity: 1,
-    is_deleted: true,
-  },
-  {
-    id: "ORD-006",
-    productName: "Mechanical Keyboard",
-    price: 149990,
-    purchaseDate: "2025-04-24",
-    purchaseTime: "09:20:00",
-    status: "delivered",
-    quantity: 1,
-    is_deleted: false,
-  },
-  {
-    id: "ORD-007",
-    productName: "Gaming Mouse",
-    price: 89990,
-    purchaseDate: "2025-04-23",
-    purchaseTime: "16:40:00",
-    status: "delivered",
-    quantity: 1,
-    is_deleted: false,
-  },
-];
+import { CancelOrderDialog } from "@/components/history/CancelOrderDialog";
+import { Order } from "@/interface/Order";
+import { orderService } from "@/utils/api/orderService";
 
 export default function PurchaseHistory() {
   const navigate = useNavigate();
-  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [statusFilter, setStatusFilter] = useState<
@@ -92,15 +21,16 @@ export default function PurchaseHistory() {
   >("all");
   const [showCancelled, setShowCancelled] = useState(false);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
 
   // 배송 상태를 시간 기준으로 계산하는 함수
-  const calculateDeliveryStatus = (purchase: Purchase): Purchase["status"] => {
-    if (purchase.is_deleted) return purchase.status;
+  const calculateDeliveryStatus = (order: Order): Order["status"] => {
+    if (order.is_deleted) return "processing";
 
     const now = new Date();
-    const purchaseDateTime = new Date(
-      `${purchase.purchaseDate}T${purchase.purchaseTime}`
-    );
+    const orderDate = new Date(order.ordered_at);
 
     // 오늘 오후 2시 기준
     const todayDeliveryDeadline = new Date();
@@ -113,41 +43,92 @@ export default function PurchaseHistory() {
 
     // 어제 오후 2시 이후 ~ 오늘 오후 2시 이전에 주문했다면 배송완료
     if (
-      purchaseDateTime >= yesterdayDeliveryDeadline &&
-      purchaseDateTime < todayDeliveryDeadline &&
+      orderDate >= yesterdayDeliveryDeadline &&
+      orderDate < todayDeliveryDeadline &&
       now > todayDeliveryDeadline
     ) {
       return "delivered";
     }
 
-    // 그 외의 경우 원래 상태 유지
-    return purchase.status;
+    // 그 외의 경우 처리중 상태
+    return "processing";
   };
 
-  const loadPurchases = async () => {
-    setIsLoading(true);
-    // Simulating API call
-    setTimeout(() => {
-      const updatedPurchases = mockPurchases.map((purchase) => ({
-        ...purchase,
-        status: calculateDeliveryStatus(purchase),
-      }));
-      setPurchases(updatedPurchases);
-      setIsLoading(false);
-    }, 1500); // Simulate loading delay
-  };
-
-  useEffect(() => {
-    // Check if user is already authenticated
+  const loadOrders = async () => {
     const savedEmail = localStorage.getItem("purchaseEmail");
     if (!savedEmail) {
       navigate("/");
-    } else {
-      loadPurchases();
+      return;
     }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await orderService.getOrdersByEmail(savedEmail);
+      // API 응답을 Order 형식으로 변환
+      let ordersWithStatus: Order[] = [];
+
+      if (Array.isArray(response)) {
+        ordersWithStatus = response.map((order) => ({
+          ...order,
+          status: calculateDeliveryStatus(order),
+          is_deleted: false,
+        }));
+      } else if (response && typeof response === "object") {
+        ordersWithStatus = [
+          {
+            ...(response as Order),
+            status: calculateDeliveryStatus(response as Order),
+            is_deleted: false,
+          },
+        ];
+      }
+
+      setOrders(ordersWithStatus);
+    } catch (err) {
+      console.error("Failed to load orders:", err);
+      setError(
+        "주문 내역을 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadOrders();
   }, [navigate]);
 
-  const getStatusColor = (status: Purchase["status"]) => {
+  const handleCancelOrder = async (orderId: number) => {
+    setSelectedOrderId(orderId);
+    setIsCancelDialogOpen(true);
+  };
+
+  const confirmCancelOrder = async () => {
+    if (!selectedOrderId) return;
+
+    try {
+      await orderService.cancelOrder({ order_id: selectedOrderId });
+      // 주문 취소 후 목록 업데이트
+      setOrders(
+        orders.map((order) =>
+          order.order_id === selectedOrderId
+            ? { ...order, is_deleted: true, status: "processing" }
+            : order
+        )
+      );
+      setIsCancelDialogOpen(false);
+      setSelectedOrderId(null);
+    } catch (err) {
+      console.error("Failed to cancel order:", err);
+      alert("주문 취소에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      setIsCancelDialogOpen(false);
+      setSelectedOrderId(null);
+    }
+  };
+
+  const getStatusColor = (status: Order["status"]) => {
     switch (status) {
       case "processing":
         return "bg-yellow-100 text-yellow-800";
@@ -168,9 +149,8 @@ export default function PurchaseHistory() {
     });
   };
 
-  const formatDateTime = (date: string, time: string) => {
-    const dateTime = new Date(`${date}T${time}`);
-    return dateTime.toLocaleString("ko-KR", {
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString("ko-KR", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -180,32 +160,30 @@ export default function PurchaseHistory() {
     });
   };
 
-  const filteredPurchases = purchases.filter((purchase) => {
+  const filteredOrders = orders.filter((order) => {
     // Filter by date
     if (date) {
-      const purchaseDate = new Date(purchase.purchaseDate);
-      if (purchaseDate.toDateString() !== date.toDateString()) {
+      const orderDate = new Date(order.ordered_at);
+      if (orderDate.toDateString() !== date.toDateString()) {
         return false;
       }
     }
 
     // Filter by status
-    if (statusFilter !== "all" && purchase.status !== statusFilter) {
+    if (statusFilter !== "all" && order.status !== statusFilter) {
       return false;
     }
 
     // Always exclude cancelled orders from main list
-    return !purchase.is_deleted;
+    return !order.is_deleted;
   });
 
-  const cancelledPurchases = purchases.filter(
-    (purchase) => purchase.is_deleted
-  );
+  const cancelledOrders = orders.filter((order) => order.is_deleted);
 
   const handleEmailChange = (email: string) => {
     localStorage.setItem("purchaseEmail", email);
     setIsEmailDialogOpen(false);
-    loadPurchases();
+    loadOrders();
   };
 
   const handleFilterReset = () => {
@@ -222,6 +200,10 @@ export default function PurchaseHistory() {
             이메일 변경
           </Button>
         </div>
+
+        {error && (
+          <div className="bg-red-50 text-red-600 p-4 rounded-md">{error}</div>
+        )}
 
         <Card>
           <CardHeader>
@@ -240,25 +222,26 @@ export default function PurchaseHistory() {
           </CardHeader>
           <CardContent>
             <PurchaseTable
-              purchases={filteredPurchases}
+              orders={filteredOrders}
               isLoading={isLoading}
               getStatusColor={getStatusColor}
               formatDateTime={formatDateTime}
               hasFilterApplied={!!date || statusFilter !== "all"}
+              onCancelOrder={handleCancelOrder}
             />
           </CardContent>
         </Card>
 
         <CancelledPurchases
-          purchases={cancelledPurchases}
+          orders={cancelledOrders}
           showCancelled={showCancelled}
           setShowCancelled={setShowCancelled}
           formatDateTime={formatDateTime}
         />
 
         <PurchaseSummaryCards
-          purchases={purchases}
-          filteredPurchases={filteredPurchases}
+          orders={orders}
+          filteredOrders={filteredOrders}
           isLoading={isLoading}
           hasDateFilter={!!date}
           formatDate={formatDate}
@@ -269,6 +252,13 @@ export default function PurchaseHistory() {
         isOpen={isEmailDialogOpen}
         onOpenChange={setIsEmailDialogOpen}
         onSubmit={handleEmailChange}
+      />
+
+      <CancelOrderDialog
+        isOpen={isCancelDialogOpen}
+        onOpenChange={setIsCancelDialogOpen}
+        onConfirm={confirmCancelOrder}
+        orderId={selectedOrderId ? `ORD-${selectedOrderId}` : ""}
       />
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import {
   Card,
   CardContent,
@@ -17,6 +18,7 @@ import {
   validateZipCode,
 } from "@/utils/validation/CheckoutValidation";
 import { Search } from "lucide-react";
+import { PaymentData } from "@/interface/PaymentData";
 
 interface CheckoutFormProps {
   cart: CartItem[];
@@ -44,6 +46,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
     address?: string;
     zipCode?: string;
   }>({});
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cart.reduce(
@@ -76,7 +79,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
     }
   };
 
-  const handleCheckoutClick = () => {
+  const handleCheckoutClick = async () => {
     const emailValidation = validateEmail(email);
     const addressValidation = validateAddress(address);
     const zipCodeValidation = validateZipCode(zipCode);
@@ -98,7 +101,38 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
       addressValidation.isValid &&
       zipCodeValidation.isValid
     ) {
-      onCheckout();
+      setIsProcessing(true);
+
+      try {
+        const paymentData: PaymentData = {
+          email: email,
+          address: address,
+          postal_code: zipCode,
+          total_price: totalPrice,
+          products: cart.map((item) => ({
+            product_id: item.product.id,
+            quantity: item.quantity,
+          })),
+        };
+
+        const response = await axios.post("/payment", paymentData);
+        onCheckout();
+
+        console.log("Payment successful:", response.data);
+      } catch (error) {
+        console.error("Payment error:", error);
+        if (axios.isAxiosError(error)) {
+          alert(
+            `결제 처리 중 오류가 발생했습니다: ${
+              error.response?.data?.message || "다시 시도해주세요."
+            }`
+          );
+        } else {
+          alert("결제 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+        }
+      } finally {
+        setIsProcessing(false);
+      }
     }
   };
 
@@ -228,9 +262,9 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
           className="w-full bg-brown-900 hover:bg-brown-800 "
           size="lg"
           onClick={handleCheckoutClick}
-          disabled={cart.length === 0}
+          disabled={cart.length === 0 || isProcessing}
         >
-          결제하기
+          {isProcessing ? "처리중..." : "결제하기"}
         </Button>
       </CardFooter>
     </Card>

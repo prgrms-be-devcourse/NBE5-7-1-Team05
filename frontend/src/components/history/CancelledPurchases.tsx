@@ -9,22 +9,22 @@ import {
 } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Purchase } from "@/interface/Purchase";
+import { Order } from "@/interface/Order";
 
 interface CancelledPurchasesProps {
-  purchases: Purchase[];
+  orders: Order[];
   showCancelled: boolean;
   setShowCancelled: (value: boolean) => void;
-  formatDateTime: (date: string, time: string) => string;
+  formatDateTime: (date: string) => string;
 }
 
 export function CancelledPurchases({
-  purchases,
+  orders,
   showCancelled,
   setShowCancelled,
   formatDateTime,
 }: CancelledPurchasesProps) {
-  if (purchases.length === 0) {
+  if (orders.length === 0) {
     return null;
   }
 
@@ -53,23 +53,34 @@ export function CancelledPurchases({
                   <TableHead className="min-w-[150px]">상품명</TableHead>
                   <TableHead className="min-w-[80px]">수량</TableHead>
                   <TableHead className="min-w-[100px]">금액</TableHead>
-                  <TableHead className="min-w-[180px]">구매일시</TableHead>
+                  <TableHead className="min-w-[180px]">주문일시</TableHead>
                   <TableHead className="min-w-[100px]">상태</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {purchases.map((purchase) => (
-                  <TableRow key={purchase.id} className="bg-red-50">
-                    <TableCell className="font-medium">{purchase.id}</TableCell>
-                    <TableCell>{purchase.productName}</TableCell>
-                    <TableCell>{purchase.quantity}</TableCell>
-                    <TableCell>{purchase.price.toLocaleString()}원</TableCell>
+                {orders.map((order) => (
+                  <TableRow key={order.order_id} className="bg-red-50">
+                    <TableCell className="font-medium">
+                      ORD-{order.order_id}
+                    </TableCell>
                     <TableCell>
-                      {formatDateTime(
-                        purchase.purchaseDate,
-                        purchase.purchaseTime
+                      {order.order_products.map((product, index) => (
+                        <div key={product.order_product_id}>
+                          {product.product_name}
+                          {index < order.order_products.length - 1 && ", "}
+                        </div>
+                      ))}
+                    </TableCell>
+                    <TableCell>
+                      {order.order_products.reduce(
+                        (sum, product) => sum + product.quantity,
+                        0
                       )}
                     </TableCell>
+                    <TableCell>
+                      {order.total_price.toLocaleString()}원
+                    </TableCell>
+                    <TableCell>{formatDateTime(order.ordered_at)}</TableCell>
                     <TableCell>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                         주문취소
