@@ -1,6 +1,7 @@
 package io.pentacore.backend;
 
 import io.pentacore.backend.global.template.MockMvcTestBase;
+import io.pentacore.backend.global.template.UserMockMvcTestBase;
 import io.pentacore.backend.global.utils.TestProductBuilder;
 import io.pentacore.backend.product.domain.Product;
 import io.pentacore.backend.product.dto.PaymentRequestDto;
@@ -17,7 +18,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Slf4j
-public class OrderFailureTest extends MockMvcTestBase {
+public class OrderFailureTest extends UserMockMvcTestBase {
 
     @Test
     @DisplayName("재고보다 많은 수량 주문 시 400 에러")

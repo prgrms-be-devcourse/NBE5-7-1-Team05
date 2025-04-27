@@ -1,6 +1,7 @@
 package io.pentacore.backend;
 
 import io.pentacore.backend.admin.domain.Admin;
+import io.pentacore.backend.global.template.AdminAuthRequiredMockMvcTestBase;
 import io.pentacore.backend.global.template.MockMvcTestBase;
 import io.pentacore.backend.product.domain.Product;
 import io.pentacore.backend.product.dto.ProductRequestDto;
@@ -21,7 +22,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Slf4j
-class ProductCRUDTest extends MockMvcTestBase {
+class ProductCRUDTest extends AdminAuthRequiredMockMvcTestBase {
 
     @Test
     @DisplayName("상품 추가")
@@ -35,6 +36,8 @@ class ProductCRUDTest extends MockMvcTestBase {
                     post("/admin/products")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(productRequestDtoJson)
+                            .header("Authorization", authorizationHeader)
+                            .header("Refresh", refreshToken)
         ).andExpect(status().isCreated());
 
         // then
@@ -63,6 +66,8 @@ class ProductCRUDTest extends MockMvcTestBase {
                 put("/admin/products/" + savedProduct.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updateRequestJson)
+                        .header("Authorization", authorizationHeader)
+                        .header("Refresh", refreshToken)
         ).andExpect(status().isOk());
 
         // then
@@ -102,6 +107,8 @@ class ProductCRUDTest extends MockMvcTestBase {
         // when
         mockMvc.perform(
                 delete("/admin/products/" + savedProduct.getId())
+                        .header("Authorization", authorizationHeader)
+                        .header("Refresh", refreshToken)
         ).andExpect(status().isOk());
 
         // then

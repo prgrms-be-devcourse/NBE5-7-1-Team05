@@ -1,6 +1,7 @@
 package io.pentacore.backend;
 
 import io.pentacore.backend.admin.domain.Admin;
+import io.pentacore.backend.global.template.AdminAuthRequiredMockMvcTestBase;
 import io.pentacore.backend.global.template.MockMvcTestBase;
 import io.pentacore.backend.global.utils.TestProductBuilder;
 import io.pentacore.backend.product.domain.Product;
@@ -20,7 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Slf4j
-public class ProductFailureTest extends MockMvcTestBase {
+public class ProductFailureTest extends AdminAuthRequiredMockMvcTestBase {
 
     @Test
     @DisplayName("저장할 상품에 대한 필수 값이 결여된 상태로 Request가 도착할 경우 400 에러")
@@ -38,6 +39,8 @@ public class ProductFailureTest extends MockMvcTestBase {
                 post("/admin/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(productRequestDtoJson)
+                        .header("Authorization", authorizationHeader)
+                        .header("Refresh", refreshToken)
         ).andExpect(status().isBadRequest());
     }
 
@@ -56,6 +59,8 @@ public class ProductFailureTest extends MockMvcTestBase {
                 put("/admin/products/" + savedProduct.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updateRequestJson)
+                        .header("Authorization", authorizationHeader)
+                        .header("Refresh", refreshToken)
         ).andExpect(status().isOk());
 
         // then
@@ -77,6 +82,8 @@ public class ProductFailureTest extends MockMvcTestBase {
                 put("/admin/products/" + random.nextInt(100))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updateRequestJson)
+                        .header("Authorization", authorizationHeader)
+                        .header("Refresh", refreshToken)
         ).andExpect(status().isNotFound());
     }
 
@@ -89,6 +96,8 @@ public class ProductFailureTest extends MockMvcTestBase {
         // when & then
         mockMvc.perform(
                 delete("/admin/products/" + productId)
+                        .header("Authorization", authorizationHeader)
+                        .header("Refresh", refreshToken)
         ).andExpect(status().isNotFound());
     }
 }
