@@ -13,8 +13,8 @@ spring:
         show_sql: true
   sql:
     init:
-      schema-locations: classpath:schema.sql
-      mode: always
+      mode: never
+
   config:
     import: optional:file:.env[.properties]
 custom:
