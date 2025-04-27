@@ -1,7 +1,7 @@
 package io.pentacore.backend.admin.api;
 import io.pentacore.backend.admin.app.AdminService;
 import io.pentacore.backend.admin.dto.LoginRequestDto;
-import io.pentacore.backend.admin.dto.SingUpRequestDto;
+import io.pentacore.backend.admin.dto.SignUpRequestDto;
 import io.pentacore.backend.global.unit.BaseResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +19,8 @@ public class AdminController {
     private final AdminService adminService;
 
     @PostMapping("/signup")
-    public ResponseEntity<BaseResponse<?>> signup(@RequestBody SingUpRequestDto singUpRequestDto) {
-        return adminService.save(singUpRequestDto);
+    public ResponseEntity<BaseResponse<?>> signup(@RequestBody SignUpRequestDto signUpRequestDto) {
+        return adminService.save(signUpRequestDto);
     }
 
 

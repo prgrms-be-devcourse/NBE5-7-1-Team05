@@ -8,7 +8,7 @@ import io.pentacore.backend.admin.domain.RefreshToken;
 import io.pentacore.backend.admin.dto.AdminDetails;
 import io.pentacore.backend.admin.dto.LoginRequestDto;
 import io.pentacore.backend.admin.dto.LoginResponseDto;
-import io.pentacore.backend.admin.dto.SingUpRequestDto;
+import io.pentacore.backend.admin.dto.SignUpRequestDto;
 import io.pentacore.backend.global.unit.BaseResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
@@ -37,7 +37,7 @@ public class AdminService {
 
     //암호화 후 db에 회원가입 정보 저장
     //BaseResponse로 지정한 내용에 http 상태 코드를 수정 후 다시 ResponseEntity로 감싸서 보냄
-    public ResponseEntity<BaseResponse<?>> save(SingUpRequestDto dto) {
+    public ResponseEntity<BaseResponse<?>> save(SignUpRequestDto dto) {
         if (adminRepository.findByEmail(dto.getEmail()).isPresent()) {
             return BaseResponse.error("이미 존재하는 이메일입니다.", HttpStatus.CONFLICT); //409 반환
         }
@@ -75,13 +75,13 @@ public class AdminService {
        ///SecurityContextHolder의 경우 서버가 세션을 기억함 → 상태ful 방식이지만 JWT는  stateless 구조를 전제로 하므로 사용하지 않았음
 
         //가입된 email과 password가 같은지 확인
-        Optional<Admin> findadmin = adminRepository.findByEmail(dto.getEmail());
+        Optional<Admin> findAdmin = adminRepository.findByEmail(dto.getEmail());
 
-        if (findadmin.isEmpty()) {                                                              //이메일이 존재하지 않다 반환 시 찾을 때까지 이메일 무한 입력 가능성
+        if (findAdmin.isEmpty()) {                                                              //이메일이 존재하지 않다 반환 시 찾을 때까지 이메일 무한 입력 가능성
             return BaseResponse.error("계정이 존재하지 않습니다.", HttpStatus.UNAUTHORIZED); //401 반화 (인증되지 않은 사용자가 접근 시도)
         }
 
-        Admin admin = findadmin.get();
+        Admin admin = findAdmin.get();
 
         if(!passwordEncoder.matches(dto.getPassword(), admin.getPassword())){
             return BaseResponse.error("계정이 존재하지 않습니다.", HttpStatus.UNAUTHORIZED); //401 반화 (인증되지 않은 사용자가 접근 시도)
