@@ -19,11 +19,8 @@ spring:
     import: optional:file:.env[.properties]
 custom:
   jwt:
-    redirection:
-      base: ${TEST_JWT_REDIRECTION_BASE}
     exp-time:
       access: 300000   # 5m
       refresh: 86400000 # 1 day
     secrets:
-      originkey: ${TEST_JWT_SECRETS_ORIGINKEY}
       appkey: ${TEST_JWT_SECRETS_APPKEY}
