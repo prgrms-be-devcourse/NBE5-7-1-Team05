@@ -1,19 +1,19 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Package, DollarSign, Calendar as CalendarIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Purchase } from "@/interface/Purchase";
+import { Order } from "@/interface/Order";
 
 interface PurchaseSummaryCardsProps {
-  purchases: Purchase[];
-  filteredPurchases: Purchase[];
+  orders: Order[];
+  filteredOrders: Order[];
   isLoading: boolean;
   hasDateFilter: boolean;
   formatDate: (date: string) => string;
 }
 
 export function PurchaseSummaryCards({
-  purchases,
-  filteredPurchases,
+  orders,
+  filteredOrders,
   isLoading,
   hasDateFilter,
   formatDate,
@@ -28,20 +28,20 @@ export function PurchaseSummaryCards({
     );
   }
 
-  if (purchases.length === 0) {
+  if (orders.length === 0) {
     return null;
   }
 
-  const totalAmount = filteredPurchases.reduce(
-    (total, purchase) => total + purchase.price,
+  const totalAmount = filteredOrders.reduce(
+    (total, order) => total + order.total_price,
     0
   );
 
-  const mostRecentPurchase = (
-    hasDateFilter ? filteredPurchases : purchases.filter((p) => !p.is_deleted)
+  const mostRecentOrder = (
+    hasDateFilter ? filteredOrders : orders.filter((order) => !order.is_deleted)
   ).sort(
     (a, b) =>
-      new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime()
+      new Date(b.ordered_at).getTime() - new Date(a.ordered_at).getTime()
   )[0];
 
   return (
@@ -57,7 +57,7 @@ export function PurchaseSummaryCards({
                 {hasDateFilter ? "선택된 날짜 구매 건수" : "총 구매 건수"}
               </p>
               <p className="text-2xl font-semibold">
-                {filteredPurchases.length}건
+                {filteredOrders.length}건
               </p>
             </div>
           </div>
@@ -89,11 +89,9 @@ export function PurchaseSummaryCards({
               <CalendarIcon className="h-6 w-6 text-purple-600" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">최근 구매일</p>
+              <p className="text-sm font-medium text-gray-500">최근 주문일</p>
               <p className="text-2xl font-semibold">
-                {mostRecentPurchase
-                  ? formatDate(mostRecentPurchase.purchaseDate)
-                  : "-"}
+                {mostRecentOrder ? formatDate(mostRecentOrder.ordered_at) : "-"}
               </p>
             </div>
           </div>

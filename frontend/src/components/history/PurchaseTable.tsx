@@ -7,29 +7,32 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { Package } from "lucide-react";
-import { Purchase } from "@/interface/Purchase";
+import { Order } from "@/interface/Order";
 
 interface PurchaseTableProps {
-  purchases: Purchase[];
+  orders: Order[];
   isLoading: boolean;
-  getStatusColor: (status: Purchase["status"]) => string;
-  formatDateTime: (date: string, time: string) => string;
+  getStatusColor: (status: Order["status"]) => string;
+  formatDateTime: (date: string) => string;
   hasFilterApplied: boolean;
+  onCancelOrder: (orderId: number) => void;
 }
 
 export function PurchaseTable({
-  purchases,
+  orders,
   isLoading,
   getStatusColor,
   formatDateTime,
   hasFilterApplied,
+  onCancelOrder,
 }: PurchaseTableProps) {
   if (isLoading) {
     return <TableSkeleton />;
   }
 
-  if (purchases.length === 0) {
+  if (orders.length === 0) {
     return (
       <div className="text-center py-12">
         <Package className="mx-auto h-12 w-12 text-gray-400" />
@@ -56,32 +59,56 @@ export function PurchaseTable({
             <TableHead className="min-w-[150px]">상품명</TableHead>
             <TableHead className="min-w-[80px]">수량</TableHead>
             <TableHead className="min-w-[100px]">금액</TableHead>
-            <TableHead className="min-w-[180px]">구매일시</TableHead>
+            <TableHead className="min-w-[180px]">주문일시</TableHead>
             <TableHead className="min-w-[100px]">상태</TableHead>
+            <TableHead className="min-w-[100px]">작업</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {purchases.map((purchase) => (
-            <TableRow key={purchase.id}>
-              <TableCell className="font-medium">{purchase.id}</TableCell>
-              <TableCell>{purchase.productName}</TableCell>
-              <TableCell>{purchase.quantity}</TableCell>
-              <TableCell>{purchase.price.toLocaleString()}원</TableCell>
-              <TableCell>
-                {formatDateTime(purchase.purchaseDate, purchase.purchaseTime)}
+          {orders.map((order) => (
+            <TableRow key={order.order_id}>
+              <TableCell className="font-medium">
+                ORD-{order.order_id}
               </TableCell>
+              <TableCell>
+                {order.order_products.map((product, index) => (
+                  <div key={product.order_product_id}>
+                    {product.product_name}
+                    {index < order.order_products.length - 1 && ", "}
+                  </div>
+                ))}
+              </TableCell>
+              <TableCell>
+                {order.order_products.reduce(
+                  (sum, product) => sum + product.quantity,
+                  0
+                )}
+              </TableCell>
+              <TableCell>{order.total_price.toLocaleString()}원</TableCell>
+              <TableCell>{formatDateTime(order.ordered_at)}</TableCell>
               <TableCell>
                 <span
                   className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                    purchase.status
+                    order.status || "processing"
                   )}`}
                 >
-                  {purchase.status === "processing"
-                    ? "처리중"
-                    : purchase.status === "shipped"
+                  {order.status === "delivered"
+                    ? "배송완료"
+                    : order.status === "shipped"
                     ? "배송중"
-                    : "배송완료"}
+                    : "처리중"}
                 </span>
+              </TableCell>
+              <TableCell>
+                {order.status !== "delivered" && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => onCancelOrder(order.order_id)}
+                  >
+                    주문취소
+                  </Button>
+                )}
               </TableCell>
             </TableRow>
           ))}
