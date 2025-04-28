@@ -1,12 +1,12 @@
 package io.pentacore.backend.admin.dto;
 
 
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
-@Data
-@RequiredArgsConstructor
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class SignUpRequestDto {
-    private final String email;
-    private final String password;
+    private String email;
+    private String password;
 }

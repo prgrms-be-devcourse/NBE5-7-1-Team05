@@ -8,7 +8,6 @@ import java.util.Date;
 //  "정상적으로 만료된 게 아니라, 강제로 로그아웃된 토큰" 을 저장하는 용도로 블랙리스트 사용
 @Entity
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BlackList {
     @Id

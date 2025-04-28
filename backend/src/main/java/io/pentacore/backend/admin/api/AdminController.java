@@ -1,6 +1,7 @@
 package io.pentacore.backend.admin.api;
 import io.pentacore.backend.admin.app.AdminService;
 import io.pentacore.backend.admin.dto.LoginRequestDto;
+import io.pentacore.backend.admin.dto.RefreshTokenRequestDto;
 import io.pentacore.backend.admin.dto.SignUpRequestDto;
 import io.pentacore.backend.global.unit.BaseResponse;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,10 +32,10 @@ public class AdminController {
 
     }
 
-
+    //https로 사용한다 가정하에 body값으로 refresh token을 전송
     @PostMapping("/admin/logout")
-    public ResponseEntity<BaseResponse<?>> logout(@RequestHeader("Authorization") String accessToken) { //헤더에서 가져옴
-        return adminService.logout(accessToken);
+    public ResponseEntity<BaseResponse<?>> logout(@RequestHeader("Authorization") String accessToken, @RequestBody RefreshTokenRequestDto refreshTokenRequestDto) { //헤더에서 가져옴
+        return adminService.logout(accessToken, refreshTokenRequestDto);
     }
 
 
