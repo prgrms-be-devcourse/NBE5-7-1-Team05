@@ -17,7 +17,7 @@ import java.util.List;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("admin/orders")
+@RequestMapping("/admin/orders")
 public class AdminOrderController {
 
     private final OrderService orderService;
