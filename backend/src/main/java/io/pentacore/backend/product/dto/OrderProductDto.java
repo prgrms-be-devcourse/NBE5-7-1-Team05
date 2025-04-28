@@ -10,13 +10,15 @@ public class OrderProductDto {
     private final String productName;
     private final Integer price;
     private final Integer quantity;
+    private final Boolean isDeleted;
 
-    private OrderProductDto(Long orderProductId, Long productId, String productName, Integer price, Integer quantity) {
+    private OrderProductDto(Long orderProductId, Long productId, String productName, Integer price, Integer quantity, Boolean isDeleted) {
         this.orderProductId = orderProductId;
         this.productId = productId;
         this.productName = productName;
         this.price = price;
         this.quantity = quantity;
+        this.isDeleted = isDeleted;
     }
 
     public static OrderProductDto from(OrderProduct orderProduct) {
@@ -25,7 +27,8 @@ public class OrderProductDto {
                 orderProduct.getProduct().getId(),
                 orderProduct.getProduct().getName(),
                 orderProduct.getProduct().getPrice(),
-                orderProduct.getQuantity()
+                orderProduct.getQuantity(),
+                orderProduct.getProduct().isDeleted()
         );
     }
 }

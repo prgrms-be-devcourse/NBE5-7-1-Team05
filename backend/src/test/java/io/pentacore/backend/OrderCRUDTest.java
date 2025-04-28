@@ -1,10 +1,14 @@
 package io.pentacore.backend;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.pentacore.backend.admin.domain.Admin;
 import io.pentacore.backend.global.template.MockMvcTestBase;
 import io.pentacore.backend.global.template.UserMockMvcTestBase;
+import io.pentacore.backend.global.unit.BaseResponse;
 import io.pentacore.backend.product.domain.Order;
 import io.pentacore.backend.product.domain.Product;
+import io.pentacore.backend.product.dto.OrderProductDto;
+import io.pentacore.backend.product.dto.OrderResponseDto;
 import io.pentacore.backend.product.dto.PaymentRequestDto;
 import io.pentacore.backend.product.dto.ProductDto;
 import io.pentacore.backend.global.utils.TestPaymentDtoBuilder;
@@ -14,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,7 +110,38 @@ public class OrderCRUDTest extends UserMockMvcTestBase {
         .andExpect(jsonPath("$.data[0].order_products[0].price").value(savedProduct.getPrice()));
 
     }
-    
+
+    @Test
+    @DisplayName("삭제 상품 주문 조회")
+    void findOrderWithDeletedProduct() throws Exception {
+        // given
+        Product savedProduct = productRepository.save(TestProductBuilder.build(admin));
+        PaymentRequestDto paymentRequestDto = TestPaymentDtoBuilder.build(List.of(savedProduct));
+
+        // when
+        mockPerformPayment(paymentRequestDto);
+
+        savedProduct.softDelete();
+
+        Order order = orderRepository.findAll().getFirst();
+        MvcResult mvcResult = mockMvc.perform(
+                get("/orders?email=" + paymentRequestDto.getEmail())
+        ).andExpect(status().isOk()).andReturn();
+
+        BaseResponse<List<OrderResponseDto>> resultDto = objectMapper.readValue(
+                mvcResult.getResponse().getContentAsString(),
+                new TypeReference<BaseResponse<List<OrderResponseDto>>>() {}
+        );
+
+        OrderProductDto resultProductDto = resultDto.getData().getFirst().getOrderProducts().getFirst();
+
+        // then
+        assertThat(resultProductDto.getProductId()).isEqualTo(savedProduct.getId());
+        assertThat(resultProductDto.getProductName()).isEqualTo(savedProduct.getName());
+        assertThat(resultProductDto.getIsDeleted()).isTrue();
+
+    }
+
     @Test
     @DisplayName("주문 취소")
     void deleteOrder() throws Exception {
