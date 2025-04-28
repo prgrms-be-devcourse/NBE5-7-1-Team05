@@ -89,7 +89,6 @@ const ShoppingCartPage = () => {
   if (isLoading) {
     return (
       <div className="container mx-auto p-4 mt-4">
-        <h1 className="text-2xl font-semibold mb-6">상품 대시보드</h1>
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brown-900"></div>
         </div>
@@ -100,7 +99,6 @@ const ShoppingCartPage = () => {
   if (error) {
     return (
       <div className="container mx-auto p-4 mt-4">
-        <h1 className="text-2xl font-semibold mb-6">상품 대시보드</h1>
         <div className="text-center p-8 bg-red-50 rounded-lg">
           <p className="text-red-600">{error}</p>
           <button

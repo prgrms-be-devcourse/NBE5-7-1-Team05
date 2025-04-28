@@ -127,8 +127,6 @@ const AdminPage = () => {
 
   return (
     <div className="container mx-auto mt-4 p-6">
-      <h1 className="text-2xl font-bold">관리자 대시보드</h1>
-
       <Tabs defaultValue="orders" className="w-full mt-4">
         <TabsList className="mb-2">
           <TabsTrigger value="orders">주문 내역</TabsTrigger>
