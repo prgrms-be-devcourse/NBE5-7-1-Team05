@@ -38,4 +38,12 @@ public class OrderService {
 
         return orderResponseDtos;
     }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponseDto> getAllOrders() {
+        List<Order> orders = orderRepository.findAll();
+        return orders.stream()
+                .map(OrderResponseDto::from)
+                .toList();
+    }
 }
