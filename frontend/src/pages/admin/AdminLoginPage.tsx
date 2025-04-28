@@ -37,7 +37,6 @@ export default function AdminLoginPage() {
     }
   };
 
-  // 로그인 성공 시 토큰 저장
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -49,9 +48,6 @@ export default function AdminLoginPage() {
       const accessToken = response.headers["authorization"];
       const refreshToken = response.headers["refresh"];
 
-      console.log(accessToken);
-      console.log(refreshToken);
-
       const user = response.data.user || response.data;
 
       if (accessToken && refreshToken) {
@@ -59,7 +55,7 @@ export default function AdminLoginPage() {
 
         localStorage.setItem("adminToken", cleanAccessToken);
         localStorage.setItem("refreshToken", refreshToken);
-        login(cleanAccessToken, user);
+        login(cleanAccessToken, refreshToken, user);
       } else {
         throw new Error("토큰을 받지 못했습니다.");
       }

@@ -1,121 +1,168 @@
 import axios from "axios";
 
-// axios 인스턴스 생성 - 모든 API 요청에 공통으로 사용할 설정을 미리 정의
-const api = axios.create({
-  // 환경변수에서 API 기본 URL 가져오기 (예: http://localhost:8080)
+export const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  headers: {
-    // 모든 요청의 기본 Content-Type을 JSON으로 설정
-    "Content-Type": "application/json",
-  },
+  withCredentials: true,
 });
 
-// 요청 인터셉터 - 모든 API 요청이 서버로 전송되기 전에 실행됨
-api.interceptors.request.use(
-  (config) => {
-    // 로컬 스토리지에서 관리자 액세스 토큰 가져오기
-    const token = localStorage.getItem("adminToken");
+// refreshAccessToken 함수를 직접 정의해서 순환 참조 제거
+const refreshAccessToken = async () => {
+  try {
+    console.group("Token Refresh Attempt");
+    console.log("Attempting to refresh token");
 
-    // 토큰이 존재하면 요청 헤더에 Authorization 추가
-    if (token) {
-      // Bearer 스키마를 사용하여 JWT 토큰을 헤더에 추가
-      config.headers.Authorization = `Bearer ${token}`;
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    console.log("cur access token", localStorage.getItem("adminToken"));
+    console.log("Current refresh token:", refreshToken);
+
+    if (!refreshToken) {
+      throw new Error("No refresh token available");
     }
 
-    // 수정된 config 객체 반환
+    const response = await axios.post(
+      `${import.meta.env.VITE_API_BASE_URL}/admin/reissue-token`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${refreshToken}`,
+        },
+      }
+    );
+
+    console.log("Token refresh response:", response);
+
+    const newAccessToken = response.headers["authorization"]?.replace(
+      "Bearer ",
+      ""
+    );
+    const newRefreshToken = response.headers["refresh"];
+
+    console.log("New access token:", newAccessToken);
+    console.log("New refresh token:", newRefreshToken);
+
+    if (!newAccessToken) {
+      throw new Error("Token refresh failed: No new access token");
+    }
+
+    localStorage.setItem("adminToken", newAccessToken);
+    if (newRefreshToken) {
+      localStorage.setItem("refreshToken", newRefreshToken);
+    }
+
+    console.log(
+      "%c 🎉 토큰 리프레시 성공! 🎉 ",
+      "background: #4CAF50; color: white; font-size: 12px; font-weight: bold; padding: 4px 8px; border-radius: 4px;"
+    );
+    console.log("토큰 갱신 시간:", new Date().toLocaleString());
+    console.log("토큰 유효성 확인:", newAccessToken.substring(0, 10) + "...");
+
+    console.groupEnd();
+    return newAccessToken;
+  } catch (error: any) {
+    console.group("Token Refresh Error");
+
+    if (error.response) {
+      console.error("Error response status:", error.response.status);
+      console.error("Error response data:", error.response.data);
+      console.error("Error response headers:", error.response.headers);
+    } else if (error.request) {
+      console.error("Error request:", error.request);
+    } else {
+      console.error("Error message:", error.message);
+    }
+
+    console.error("Full error object:", error);
+    console.groupEnd();
+
+    throw error;
+  }
+};
+
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("adminToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
-    // 요청 전 에러 발생 시 에러를 그대로 반환
     return Promise.reject(error);
   }
 );
 
-// 응답 인터셉터 - 서버에서 응답을 받은 후 실행됨
 api.interceptors.response.use(
-  // 성공 응답(200번대)은 그대로 반환
-  (response) => response,
-
-  // 에러 응답 처리
+  (response) => {
+    // 토큰 갱신 응답인 경우 성공 로그 추가
+    if (response.config.url?.includes("/reissue-token")) {
+      console.group("Token Refresh Success");
+      console.log(
+        "%c 토큰 갱신 응답 수신 성공 ",
+        "background: #2196F3; color: white; font-size: 12px; font-weight: bold; padding: 4px 8px; border-radius: 4px;"
+      );
+      console.log("응답 상태:", response.status);
+      console.log("응답 헤더:", response.headers);
+      console.groupEnd();
+    }
+    return response;
+  },
   async (error) => {
-    // 실패한 요청의 원본 설정 저장
     const originalRequest = error.config;
 
-    // 401 Unauthorized 에러(토큰 만료) 처리
-    // _retry 플래그로 무한 재시도 방지
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      // 재시도 플래그 설정 - 이 요청이 이미 한 번 실패했음을 표시
+    if (originalRequest._retry) {
+      window.location.href = "/admin/login";
+      return Promise.reject(error);
+    }
+
+    if (
+      originalRequest.url?.includes("/reissue-token") ||
+      originalRequest.url?.includes("/login")
+    ) {
+      return Promise.reject(error);
+    }
+
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      // 이미 재시도한 요청이면 로그아웃하지 말고 그냥 에러 반환
+      if (originalRequest._retry) {
+        console.log("이미 토큰 갱신을 시도했지만 실패했습니다");
+        return Promise.reject(error);
+      }
+
       originalRequest._retry = true;
 
       try {
-        // 로컬 스토리지에서 리프레시 토큰 가져오기
-        const refreshToken = localStorage.getItem("refreshToken");
-
-        // 리프레시 토큰이 없으면 에러 발생
-        if (!refreshToken) {
-          throw new Error("No refresh token available");
-        }
-
-        // 토큰 재발급 API 호출
-        // 주의: 여기서는 api 인스턴스가 아닌 순수 axios를 사용 (인터셉터 무한 루프 방지)
-        const response = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL}${
-            import.meta.env.VITE_API_REISSUE_TOKEN
-          }`,
-          { refreshToken } // 요청 본문에 리프레시 토큰 포함
+        const newAccessToken = await refreshAccessToken();
+        console.log(
+          "%c 원본 요청 재시도 중 ",
+          "background: #4CAF50; color: white; font-size: 12px; font-weight: bold; padding: 4px 8px; border-radius: 4px;"
         );
-
-        // 응답 헤더에서 새로운 액세스 토큰 추출
-        // 서버가 access-token 또는 authorization 헤더로 전달할 수 있음
-        const newAccessToken = response.headers["authorization"];
-        // 응답 헤더에서 새로운 리프레시 토큰 추출
-        const newRefreshToken = response.headers["refresh"];
-        console.log("curToken", localStorage.getItem("adinToken"));
-        console.log("newToken", newAccessToken);
-        console.log("newRefreshToken", newRefreshToken);
-
-        // 새로운 액세스 토큰이 있는 경우
-        if (newAccessToken) {
-          // Bearer 접두사 제거
-          const cleanAccessToken = newAccessToken.replace("Bearer ", "");
-
-          // 새 액세스 토큰을 로컬 스토리지에 저장
-          localStorage.setItem("adminToken", cleanAccessToken);
-
-          // 새 리프레시 토큰이 있으면 교체
-          if (newRefreshToken) {
-            localStorage.setItem("refreshToken", newRefreshToken);
-          }
-
-          // 실패했던 원래 요청에 새 액세스 토큰 적용
-          originalRequest.headers.Authorization = `Bearer ${cleanAccessToken}`;
-
-          // 원래 요청 재시도
-          return api(originalRequest);
-        } else {
-          // 새 토큰을 받지 못한 경우 에러 발생
-          throw new Error("No new token received");
-        }
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return api(originalRequest);
       } catch (refreshError) {
-        // 토큰 재발급 실패 (리프레시 토큰 만료 등)
-
-        // 모든 인증 정보 삭제
+        console.error("토큰 갱신 실패:", refreshError);
+        // 토큰 갱신 실패시에만 로그아웃 처리
         localStorage.removeItem("adminToken");
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("adminUser");
 
-        // 로그인 페이지로 강제 이동
-        window.location.href = "/admin/login";
+        // 로그인 페이지로 리다이렉트하기 전에 사용자에게 알림
+        console.log(
+          "%c 세션이 만료되어 로그인 페이지로 이동합니다 ",
+          "background: #F44336; color: white; font-size: 12px; font-weight: bold; padding: 4px 8px; border-radius: 4px;"
+        );
 
-        // 에러 반환
+        // 현재 URL이 로그인 페이지가 아닌 경우에만 리다이렉트
+        if (!window.location.href.includes("/admin/login")) {
+          window.location.href = "/admin/login";
+        }
         return Promise.reject(refreshError);
       }
     }
 
-    // 401이 아닌 다른 에러는 그대로 반환
     return Promise.reject(error);
   }
 );
 
-// 설정된 axios 인스턴스 내보내기
+export { refreshAccessToken };
 export default api;

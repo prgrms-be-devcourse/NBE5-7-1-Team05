@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { User } from "@/interface/User";
 import { AuthContextType } from "@/interface/AuthContextType";
-import api from "@/utils/api/axiosConfig";
+import { authService } from "@/utils/api/authService";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -11,7 +11,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // 새로 추가
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,14 +26,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       } catch (error) {
         console.error("Failed to parse user data:", error);
         localStorage.removeItem("adminToken");
+        localStorage.removeItem("refreshToken");
         localStorage.removeItem("adminUser");
       }
     }
     setIsLoading(false);
   }, []);
 
-  const login = (token: string, userData: User) => {
+  const login = (token: string, refreshToken: string, userData: User) => {
     localStorage.setItem("adminToken", token);
+    localStorage.setItem("refreshToken", refreshToken);
     localStorage.setItem("adminUser", JSON.stringify(userData));
     setUser(userData);
     setIsAuthenticated(true);
@@ -41,26 +43,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const logout = async () => {
     try {
-      const token = localStorage.getItem("adminToken");
-      if (token) {
-        await api.post(
-          "/admin/logout",
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+      const accessToken = localStorage.getItem("adminToken");
+      const refreshToken = localStorage.getItem("refreshToken");
+
+      if (accessToken && refreshToken) {
+        await authService.logout();
       }
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
       localStorage.removeItem("adminToken");
+      localStorage.removeItem("refreshToken");
       localStorage.removeItem("adminUser");
       setUser(null);
       setIsAuthenticated(false);
-      navigate("/admin/login");
+      navigate("/products");
     }
   };
 

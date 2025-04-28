@@ -21,7 +21,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     <Card key={product.id} className="overflow-hidden !p-0">
       <div className="aspect-square w-full overflow-hidden">
         <img
-          src={product.imageUrl}
+          src={product.image_url}
           alt={product.name}
           className="h-full w-full object-cover transition-transform"
           onError={(e) => {

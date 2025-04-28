@@ -1,15 +1,16 @@
-import axios from "./axiosConfig";
+import api from "./axiosConfig";
 import { OrderResponse, OrderCancelRequest } from "@/interface/Order";
 
 export const orderService = {
   getOrdersByEmail: async (email: string): Promise<OrderResponse[]> => {
-    const response = await axios.get(
+    const response = await api.get(
       `/orders?email=${encodeURIComponent(email)}`
     );
     return response.data;
   },
 
   cancelOrder: async (orderRequest: OrderCancelRequest): Promise<void> => {
-    await axios.put(`/orders/${orderRequest.order_id}`, orderRequest);
+    console.log(orderRequest);
+    await api.delete(`/orders/${orderRequest.order_id}`);
   },
 };

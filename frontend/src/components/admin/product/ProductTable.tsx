@@ -55,7 +55,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
             <TableCell>
               <div className="w-12 h-12 rounded overflow-hidden">
                 <img
-                  src={product.imageUrl}
+                  src={product.image_url}
                   alt={product.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
@@ -67,13 +67,11 @@ const ProductTable: React.FC<ProductTableProps> = ({
             <TableCell>{product.name}</TableCell>
             <TableCell>{product.category}</TableCell>
             <TableCell>{product.stock}</TableCell>
-            <TableCell className="text-right">
-              {product.price.toLocaleString()}원
-            </TableCell>
+            <TableCell className="text-right">{product.price}원</TableCell>
             {isDeleted ? (
               <TableCell className="text-right">
-                {product.deletedAt
-                  ? new Date(product.deletedAt).toLocaleString()
+                {product.deleted_at
+                  ? new Date(product.deleted_at).toLocaleString()
                   : "-"}
               </TableCell>
             ) : (

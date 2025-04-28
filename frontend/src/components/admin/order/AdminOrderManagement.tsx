@@ -36,7 +36,7 @@ const AdminOrderManagement: React.FC<Props> = ({ orders }) => {
     yesterday.setHours(14, 0, 0, 0);
 
     return orders.filter((order) => {
-      const orderDate = new Date(order.date);
+      const orderDate = new Date(order.ordered_at);
 
       if (dateFilter === "today") {
         return orderDate >= yesterday && orderDate <= today;
@@ -90,15 +90,21 @@ const AdminOrderManagement: React.FC<Props> = ({ orders }) => {
           </TableHeader>
           <TableBody>
             {filteredOrders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell className="font-medium">{order.id}</TableCell>
+              <TableRow key={order.order_id}>
+                <TableCell className="font-medium">{order.order_id}</TableCell>
                 <TableCell>{order.email}</TableCell>
-                <TableCell>{new Date(order.date).toLocaleString()}</TableCell>
                 <TableCell>
-                  {order.items.reduce((sum, item) => sum + item.quantity, 0)}개
+                  {new Date(order.ordered_at).toLocaleString()}
+                </TableCell>
+                <TableCell>
+                  {order.order_products.reduce(
+                    (sum, item) => sum + item.quantity,
+                    0
+                  )}
+                  개
                 </TableCell>
                 <TableCell className="text-right">
-                  {order.totalAmount.toLocaleString()}원
+                  {order.total_price.toLocaleString()}원
                 </TableCell>
                 <TableCell className="text-center">
                   <OrderDetailModal order={order} />

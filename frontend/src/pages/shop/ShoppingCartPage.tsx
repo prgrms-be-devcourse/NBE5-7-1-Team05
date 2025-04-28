@@ -18,8 +18,11 @@ const ShoppingCartPage = () => {
     const fetchProducts = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get("http://localhost:8080/products");
-        console.log(response);
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}${
+            import.meta.env.VITE_API_PRODUCTS
+          }`
+        );
         const activeProducts = response.data.data.filter(
           (product: Product) => !product.deleted
         );

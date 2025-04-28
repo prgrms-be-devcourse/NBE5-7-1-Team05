@@ -10,7 +10,6 @@ export const validateProduct = (
 ): ValidationError[] => {
   const errors: ValidationError[] = [];
 
-  // 상품명 검증
   if (!product.name.trim()) {
     errors.push({ field: "name", message: "상품명을 입력해주세요." });
   } else if (product.name.trim().length < 2) {
@@ -20,7 +19,6 @@ export const validateProduct = (
     });
   }
 
-  // 카테고리 검증
   if (!product.category.trim()) {
     errors.push({
       field: "category",
@@ -39,12 +37,12 @@ export const validateProduct = (
   }
 
   // 이미지 URL 검증
-  if (!product.imageUrl.trim()) {
+  if (!product.image_url.trim()) {
     errors.push({
       field: "imageUrl",
       message: "이미지 URL을 입력해주세요.",
     });
-  } else if (!isValidUrl(product.imageUrl)) {
+  } else if (!isValidUrl(product.image_url)) {
     errors.push({
       field: "imageUrl",
       message: "유효한 URL 형식이 아닙니다.",
