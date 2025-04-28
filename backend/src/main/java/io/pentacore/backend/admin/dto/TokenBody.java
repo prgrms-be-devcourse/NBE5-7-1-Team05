@@ -1,14 +1,11 @@
 package io.pentacore.backend.admin.dto;
 
 import io.pentacore.backend.admin.domain.Role;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+@Getter
+@RequiredArgsConstructor
 public class TokenBody {
-    private Long adminId;
-    private Role role;
+    private final Long adminId;
+    private final Role role;
 }

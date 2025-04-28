@@ -15,24 +15,29 @@ public class TestPaymentDtoBuilder {
 
     public static PaymentRequestDto build(List<Product> products) {
         ++sequence;
-        PaymentRequestDto paymentRequestDto = new PaymentRequestDto();
-        paymentRequestDto.setAddress("ADDR-" + sequence);
-        paymentRequestDto.setEmail("test" + sequence + "@gmail.com");
-        paymentRequestDto.setPostalCode(Integer.toString(10000 + random.nextInt(50000)));
-        paymentRequestDto.setTotalPrice(0);
 
         List<ProductDto> productDtoList = new ArrayList<>();
-        products.forEach(product -> {
-            ProductDto productDto = new ProductDto();
-            productDto.setProductId(product.getId());
-            productDto.setQuantity(product.getStock() - random.nextInt(product.getStock()));
-            productDtoList.add(productDto);
-            paymentRequestDto.setTotalPrice(
-                    paymentRequestDto.getTotalPrice() + product.getPrice() * productDto.getQuantity()
-            );
-        });
-        paymentRequestDto.setProducts(productDtoList);
 
-        return paymentRequestDto;
+        String email = "test" + sequence + "@gmail.com";
+        String address = "ADDR-" + sequence;
+        String postalCode = Integer.toString(10000 + random.nextInt(50000));
+        int totalPrice = 0;
+
+        for (Product product : products) {
+            ProductDto productDto = new ProductDto(
+                    product.getId(),
+                    product.getStock() - random.nextInt(product.getStock())
+            );
+            productDtoList.add(productDto);
+            totalPrice += product.getPrice() * productDto.getQuantity();
+        }
+
+        return new PaymentRequestDto(
+                email,
+                address,
+                postalCode,
+                totalPrice,
+                productDtoList
+        );
     }
 }
