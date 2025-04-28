@@ -10,6 +10,7 @@ import { CancelledPurchases } from "@/components/history/CancelledPurchases";
 import { CancelOrderDialog } from "@/components/history/CancelOrderDialog";
 import { Order } from "@/interface/Order";
 import { orderService } from "@/utils/api/orderService";
+import { Mail } from "lucide-react";
 
 export default function PurchaseHistory() {
   const navigate = useNavigate();
@@ -266,9 +267,21 @@ export default function PurchaseHistory() {
   return (
     <div className="container mx-auto p-4 md:p-6">
       <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-          <h1 className="text-2xl font-bold">구매 내역</h1>
-          <Button variant="outline" onClick={() => setIsEmailDialogOpen(true)}>
+        <div className="bg-white rounded-lg p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border">
+          <div className="flex items-center gap-2">
+            <Mail className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <span className="text-sm font-medium">현재 이메일:</span>
+              <span className="ml-2 text-sm">
+                {localStorage.getItem("purchaseEmail")}
+              </span>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => setIsEmailDialogOpen(true)}
+            className="w-full sm:w-auto"
+          >
             이메일 변경
           </Button>
         </div>
