@@ -3,8 +3,8 @@ export default interface Product {
   name: string;
   category: string;
   price: number;
-  imageUrl: string;
+  image_url: string;
   stock: number;
   deleted?: boolean;
-  deletedAt?: string;
+  deleted_at?: string;
 }

@@ -115,7 +115,14 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
           })),
         };
 
-        const response = await axios.post("/payment", paymentData);
+        console.log(paymentData);
+
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_BASE_URL}${
+            import.meta.env.VITE_API_PAYMENT
+          }`,
+          paymentData
+        );
         onCheckout();
 
         console.log("Payment successful:", response.data);
@@ -137,7 +144,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
   };
 
   return (
-    <Card className="sticky top-4">
+    <Card className="sticky top-20">
       <CardHeader>
         <CardTitle className="text-xl">주문 요약</CardTitle>
       </CardHeader>

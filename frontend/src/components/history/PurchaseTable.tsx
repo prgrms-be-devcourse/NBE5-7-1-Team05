@@ -57,11 +57,11 @@ export function PurchaseTable({
           <TableRow>
             <TableHead className="min-w-[100px]">주문번호</TableHead>
             <TableHead className="min-w-[150px]">상품명</TableHead>
-            <TableHead className="min-w-[80px]">수량</TableHead>
-            <TableHead className="min-w-[100px]">금액</TableHead>
-            <TableHead className="min-w-[180px]">주문일시</TableHead>
-            <TableHead className="min-w-[100px]">상태</TableHead>
-            <TableHead className="min-w-[100px]">작업</TableHead>
+            <TableHead className="min-w-[80px] text-right">수량</TableHead>
+            <TableHead className="min-w-[100px] text-right">금액</TableHead>
+            <TableHead className="min-w-[180px] text-right">주문일시</TableHead>
+            <TableHead className="min-w-[100px] text-right">상태</TableHead>
+            <TableHead className="min-w-[100px] text-right">작업</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -78,15 +78,19 @@ export function PurchaseTable({
                   </div>
                 ))}
               </TableCell>
-              <TableCell>
+              <TableCell className="text-right">
                 {order.order_products.reduce(
                   (sum, product) => sum + product.quantity,
                   0
                 )}
               </TableCell>
-              <TableCell>{order.total_price.toLocaleString()}원</TableCell>
-              <TableCell>{formatDateTime(order.ordered_at)}</TableCell>
-              <TableCell>
+              <TableCell className="text-right">
+                {order.total_price.toLocaleString()}원
+              </TableCell>
+              <TableCell className="text-right">
+                {formatDateTime(order.ordered_at)}
+              </TableCell>
+              <TableCell className="text-right">
                 <span
                   className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
                     order.status || "processing"
@@ -99,8 +103,8 @@ export function PurchaseTable({
                     : "처리중"}
                 </span>
               </TableCell>
-              <TableCell>
-                {order.status !== "delivered" && (
+              <TableCell className="text-right">
+                {order.status !== "delivered" ? (
                   <Button
                     variant="destructive"
                     size="sm"
@@ -108,6 +112,8 @@ export function PurchaseTable({
                   >
                     주문취소
                   </Button>
+                ) : (
+                  "-"
                 )}
               </TableCell>
             </TableRow>

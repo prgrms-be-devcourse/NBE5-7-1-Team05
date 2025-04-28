@@ -99,9 +99,9 @@ const ProductForm: React.FC<Props> = ({
           <Input
             type="text"
             placeholder="이미지 URL 입력"
-            value={product.imageUrl}
+            value={product.image_url}
             onChange={(e) =>
-              onProductChange({ ...product, imageUrl: e.target.value })
+              onProductChange({ ...product, image_url: e.target.value })
             }
             className={getFieldError("imageUrl") ? "border-red-500" : ""}
             disabled={isLoading}
