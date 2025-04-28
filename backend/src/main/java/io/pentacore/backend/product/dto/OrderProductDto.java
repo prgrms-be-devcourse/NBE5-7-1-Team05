@@ -12,7 +12,7 @@ public class OrderProductDto {
     private final String productName;
     private final Integer price;
     private final Integer quantity;
-
+    private final Boolean isDeleted;
 
     public static OrderProductDto from(OrderProduct orderProduct) {
         return new OrderProductDto(
@@ -20,7 +20,8 @@ public class OrderProductDto {
                 orderProduct.getProduct().getId(),
                 orderProduct.getProduct().getName(),
                 orderProduct.getProduct().getPrice(),
-                orderProduct.getQuantity()
+                orderProduct.getQuantity(),
+                orderProduct.getProduct().isDeleted()
         );
     }
 }
