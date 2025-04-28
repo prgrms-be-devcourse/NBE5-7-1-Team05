@@ -28,10 +28,13 @@ public class ProductFailureTest extends AdminAuthRequiredMockMvcTestBase {
     void saveProductDtoNullValue() throws Exception {
         // given
         String productRequestDtoJson = objectMapper.writeValueAsString(
-                ProductRequestDto.builder()
-                        .name("NULL_PRODUCT")
-                        .price(10000)
-                        .build()
+                new ProductRequestDto(
+                        "NAME",
+                        null,
+                        1000 * random.nextInt(10),
+                        "IMAGE",
+                        random.nextInt(100) + 1
+                )
         );
 
         // when & then

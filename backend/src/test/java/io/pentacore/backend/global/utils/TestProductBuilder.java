@@ -24,12 +24,12 @@ public class TestProductBuilder {
     }
 
     public static ProductRequestDto buildDto() {
-                return ProductRequestDto.builder()
-                        .name("EX-" + sequence)
-                        .price(1000 * random.nextInt(10))
-                        .imageUrl("IMAGE-" + sequence)
-                        .category("CAT-" + sequence)
-                        .stock(random.nextInt(100) + 1)
-                        .build();
+        return new ProductRequestDto(
+                "EX-" + sequence,
+                "CAT-" + sequence,
+                1000 * random.nextInt(10),
+                "IMAGE-" + sequence,
+                random.nextInt(100) + 1
+        );
     }
 }
