@@ -7,11 +7,13 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import lombok.*;
 
 import java.util.List;
 
-@Data
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class PaymentRequestDto {
 
     @NotBlank(message = "이메일은 필수입니다.")

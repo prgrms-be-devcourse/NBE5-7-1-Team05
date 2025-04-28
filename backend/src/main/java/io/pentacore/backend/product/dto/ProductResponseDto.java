@@ -2,8 +2,10 @@ package io.pentacore.backend.product.dto;
 
 import io.pentacore.backend.product.domain.Product;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
+@RequiredArgsConstructor
 public class ProductResponseDto {
     private final Long id;
     private final String name;

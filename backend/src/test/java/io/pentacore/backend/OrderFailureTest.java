@@ -2,6 +2,7 @@ package io.pentacore.backend;
 
 import io.pentacore.backend.global.template.MockMvcTestBase;
 import io.pentacore.backend.global.template.UserMockMvcTestBase;
+import io.pentacore.backend.global.utils.TestPaymentDtoBuilder;
 import io.pentacore.backend.global.utils.TestProductBuilder;
 import io.pentacore.backend.product.domain.Product;
 import io.pentacore.backend.product.dto.PaymentRequestDto;
@@ -27,16 +28,18 @@ public class OrderFailureTest extends UserMockMvcTestBase {
         Product savedProduct = productRepository.save(TestProductBuilder.build(admin));
         int orderQuantity = savedProduct.getStock() + 1;
 
-        PaymentRequestDto paymentRequestDto = new PaymentRequestDto();
-        paymentRequestDto.setAddress("ADDR");
-        paymentRequestDto.setEmail("test@gmail.com");
-        paymentRequestDto.setPostalCode(Integer.toString(10000 + random.nextInt(50000)));
-        paymentRequestDto.setTotalPrice(savedProduct.getPrice() * orderQuantity);
-
-        ProductDto productDto = new ProductDto();
-        productDto.setProductId(savedProduct.getId());
-        productDto.setQuantity(orderQuantity);
-        paymentRequestDto.setProducts(List.of(productDto));
+        PaymentRequestDto paymentRequestDto = new PaymentRequestDto(
+                "test@gmail.com",
+                "ADDR",
+                Integer.toString(10000 + random.nextInt(50000)),
+                savedProduct.getPrice() * orderQuantity,
+                List.of(
+                        new ProductDto(
+                                savedProduct.getId(),
+                                orderQuantity
+                        )
+                )
+        );
                 
         // when
         ResultActions resultActions = mockPerformPayment(paymentRequestDto);
@@ -50,19 +53,11 @@ public class OrderFailureTest extends UserMockMvcTestBase {
     @DisplayName("존재하지 않는 상품 주문 시 404 에러")
     void payNullProduct() throws Exception {
         // given
-        int orderQuantity = random.nextInt(100) + 1;
-        int orderPrice = random.nextInt(1000);
-
-        PaymentRequestDto paymentRequestDto = new PaymentRequestDto();
-        paymentRequestDto.setAddress("ADDR");
-        paymentRequestDto.setEmail("test@gmail.com");
-        paymentRequestDto.setPostalCode(Integer.toString(10000 + random.nextInt(50000)));
-        paymentRequestDto.setTotalPrice(orderPrice * orderQuantity);
-
-        ProductDto productDto = new ProductDto();
-        productDto.setProductId(random.nextLong(100));
-        productDto.setQuantity(orderQuantity);
-        paymentRequestDto.setProducts(List.of(productDto));
+        PaymentRequestDto paymentRequestDto = TestPaymentDtoBuilder.build(
+                List.of(
+                        TestProductBuilder.build(admin)
+                )
+        );
 
         // when
         ResultActions resultActions = mockPerformPayment(paymentRequestDto);
