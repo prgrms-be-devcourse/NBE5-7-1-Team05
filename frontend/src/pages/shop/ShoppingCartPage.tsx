@@ -19,6 +19,7 @@ const ShoppingCartPage = () => {
       try {
         setIsLoading(true);
         const response = await axios.get("http://localhost:8080/products");
+        console.log(response);
         const activeProducts = response.data.data.filter(
           (product: Product) => !product.deleted
         );

@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:test;MODE=MYSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+  sql:
+    init:
+      schema-locations: classpath:schema.sql
+      mode: always
+  config:
+    import: optional:file:.env[.properties]
+custom:
+  jwt:
+    redirection:
+      base: ${TEST_JWT_REDIRECTION_BASE}
+    exp-time:
+      access: 300000   # 5m
+      refresh: 86400000 # 1 day
+    secrets:
+      originkey: ${TEST_JWT_SECRETS_ORIGINKEY}
+      appkey: ${TEST_JWT_SECRETS_APPKEY}

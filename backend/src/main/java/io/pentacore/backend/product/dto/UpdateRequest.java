@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateRequest {
 
-    @NotNull
+    @NotNull(message = "재고 변화량 입력은 필수입니다.")
     private Integer stock;
 
 }

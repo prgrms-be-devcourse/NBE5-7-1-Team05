@@ -19,12 +19,14 @@ import java.util.List;
 //구현 필수 메서드
 public class AdminDetails implements UserDetails {
 
+    private Long id;
     private String email;
     private String password;
     private Role role;
 
     @Builder
-    public AdminDetails(String password, String email, Role role) {
+    public AdminDetails(Long id, String password, String email, Role role) {
+        this.id = id;
         this.password = password;
         this.email = email;
         this.role = role;
@@ -32,6 +34,7 @@ public class AdminDetails implements UserDetails {
 
     public static AdminDetails AdminDetailsMake(Admin findAdmin) {
         AdminDetails adminDetails = new AdminDetails();
+        adminDetails.id = findAdmin.getId();
         adminDetails.email = findAdmin.getEmail();
         adminDetails.password = findAdmin.getPassword();
         adminDetails.role = findAdmin.getRole();
@@ -62,8 +65,5 @@ public class AdminDetails implements UserDetails {
         return admindetails;
     }
 
-
-//    public Admin getAdmin() {
-//    }
 }
 

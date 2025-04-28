@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { User } from "@/interface/User";
 import { AuthContextType } from "@/interface/AuthContextType";
+import api from "@/utils/api/axiosConfig";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -10,6 +11,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // 새로 추가
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,6 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         localStorage.removeItem("adminUser");
       }
     }
+    setIsLoading(false);
   }, []);
 
   const login = (token: string, userData: User) => {
@@ -36,16 +39,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsAuthenticated(true);
   };
 
-  const logout = () => {
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminUser");
-    setUser(null);
-    setIsAuthenticated(false);
-    navigate("/admin/login");
+  const logout = async () => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      if (token) {
+        await api.post(
+          "/admin/logout",
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      localStorage.removeItem("adminToken");
+      localStorage.removeItem("adminUser");
+      setUser(null);
+      setIsAuthenticated(false);
+      navigate("/admin/login");
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider
+      value={{ isAuthenticated, user, login, logout, isLoading }}
+    >
       {children}
     </AuthContext.Provider>
   );

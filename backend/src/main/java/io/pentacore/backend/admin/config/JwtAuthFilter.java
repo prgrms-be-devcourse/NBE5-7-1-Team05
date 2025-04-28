@@ -1,4 +1,4 @@
-package io.pentacore.backend.admin.comfig;
+package io.pentacore.backend.admin.config;
 
 import io.jsonwebtoken.JwtException;
 import io.pentacore.backend.admin.dao.BlackListRepository;

@@ -67,10 +67,12 @@ api.interceptors.response.use(
 
         // 응답 헤더에서 새로운 액세스 토큰 추출
         // 서버가 access-token 또는 authorization 헤더로 전달할 수 있음
-        const newAccessToken =
-          response.headers["access-token"] || response.headers["authorization"];
+        const newAccessToken = response.headers["authorization"];
         // 응답 헤더에서 새로운 리프레시 토큰 추출
-        const newRefreshToken = response.headers["refresh-token"];
+        const newRefreshToken = response.headers["refresh"];
+        console.log("curToken", localStorage.getItem("adinToken"));
+        console.log("newToken", newAccessToken);
+        console.log("newRefreshToken", newRefreshToken);
 
         // 새로운 액세스 토큰이 있는 경우
         if (newAccessToken) {

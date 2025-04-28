@@ -44,3 +44,4 @@ dist/
 .vscode/
 
 src/main/resources/application.yml
+src/test/resources/*.sql
