@@ -7,10 +7,10 @@ interface FooterProps extends React.HTMLAttributes<HTMLElement> {}
 const Footer = ({ className, ...props }: FooterProps) => {
   return (
     <footer
-      className={cn("w-full bg-background border-t", className)}
+      className={cn("w-full bg-background border-t mt-5", className)}
       {...props}
     >
-      <div className="container px-4 md:px-6 py-6 mx-auto">
+      <div className="container px-4 md:px-6 py-6 mx-auto ">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div className="flex flex-col">
             <h3 className="text-sm font-medium flex items-center gap-2">

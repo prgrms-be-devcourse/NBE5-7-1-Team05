@@ -18,7 +18,7 @@ export default function PurchaseHistory() {
   const [isLoading, setIsLoading] = useState(true);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [statusFilter, setStatusFilter] = useState<
-    "all" | "processing" | "shipped" | "delivered"
+    "all" | "processing" | "delivered"
   >("all");
   const [showCancelled, setShowCancelled] = useState(false);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
@@ -26,16 +26,27 @@ export default function PurchaseHistory() {
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
 
+  // 한국 시간으로 날짜 변환하는 함수
+  const toKSTDate = (dateString: string): Date => {
+    const date = new Date(dateString);
+
+    // 이미 KST 시간(+09:00)이 포함된 경우는 그대로 반환
+    if (dateString.includes("Z") || dateString.includes("+")) {
+      return date;
+    }
+
+    date.setHours(date.getHours() + 8);
+    return date;
+  };
+
   const calculateDeliveryStatus = (order: Order): Order["status"] => {
     if (order.is_deleted) return "processing";
 
+    // 현재 시간 (한국 시간)
     const now = new Date();
 
-    const orderDate = new Date(order.ordered_at);
-
-    if (!order.ordered_at.includes("Z") && !order.ordered_at.includes("+")) {
-      orderDate.setHours(orderDate.getHours() + 9);
-    }
+    // 주문 시간 (한국 시간으로 변환)
+    const orderDate = toKSTDate(order.ordered_at);
 
     console.log("주문 날짜/시간 (KST):", orderDate.toLocaleString("ko-KR"));
     console.log("현재 날짜/시간 (KST):", now.toLocaleString("ko-KR"));
@@ -58,17 +69,9 @@ export default function PurchaseHistory() {
       yesterdayDeliveryDeadline.toLocaleString("ko-KR")
     );
 
-    // 오늘 주문 (오늘 오후 2시 이전)
-    if (
-      orderDate.getDate() === now.getDate() &&
-      orderDate.getMonth() === now.getMonth() &&
-      orderDate.getFullYear() === now.getFullYear() &&
-      now.getHours() < 14
-    ) {
-      return "processing";
-    }
+    // 새로운 배송 상태 계산 로직:
 
-    // 오늘 주문 (오늘 오후 2시 이후)
+    // 1. 오늘 주문된 경우 - 항상 "처리 중(processing)"
     if (
       orderDate.getDate() === now.getDate() &&
       orderDate.getMonth() === now.getMonth() &&
@@ -77,24 +80,13 @@ export default function PurchaseHistory() {
       return "processing";
     }
 
-    // 어제 주문
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    if (
-      orderDate.getDate() === yesterday.getDate() &&
-      orderDate.getMonth() === yesterday.getMonth() &&
-      orderDate.getFullYear() === yesterday.getFullYear()
-    ) {
-      // 어제 오후 2시 이전 주문 + 현재 오후 2시 이후 => 배송 완료
-      if (orderDate.getHours() < 14 && now.getHours() >= 14) {
-        return "delivered";
-      }
-      // 그 외의 경우 배송 중
-      return "shipped";
+    // . 어제 오후 2시 이전에 주문된 경우 - "배송 완료(delivered)"
+    if (orderDate < todayDeliveryDeadline) {
+      return "delivered";
     }
 
-    // 이틀 이상 지난 주문은 배송 완료
-    return "delivered";
+    // 기본값으로 "처리 중(processing)" 반환
+    return "processing";
   };
 
   const loadOrders = async () => {
@@ -199,8 +191,6 @@ export default function PurchaseHistory() {
     switch (status) {
       case "processing":
         return "bg-yellow-100 text-yellow-800";
-      case "shipped":
-        return "bg-blue-100 text-blue-800";
       case "delivered":
         return "bg-green-100 text-green-800";
       default:
@@ -208,16 +198,20 @@ export default function PurchaseHistory() {
     }
   };
 
+  // 한국 시간으로 날짜 포맷팅
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("ko-KR", {
+    const kstDate = toKSTDate(dateString);
+    return kstDate.toLocaleDateString("ko-KR", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
   };
 
+  // 한국 시간으로 날짜 및 시간 포맷팅
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString("ko-KR", {
+    const kstDate = toKSTDate(dateString);
+    return kstDate.toLocaleString("ko-KR", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -234,10 +228,16 @@ export default function PurchaseHistory() {
       return false;
     }
 
-    // 날짜 필터 적용
+    // 날짜 필터 적용 (한국 시간 기준)
     if (date) {
-      const orderDate = new Date(order.ordered_at);
-      if (orderDate.toDateString() !== date.toDateString()) {
+      const orderDate = toKSTDate(order.ordered_at);
+      const filterDate = new Date(date);
+      // 날짜만 비교 (시간 제외)
+      if (
+        orderDate.getFullYear() !== filterDate.getFullYear() ||
+        orderDate.getMonth() !== filterDate.getMonth() ||
+        orderDate.getDate() !== filterDate.getDate()
+      ) {
         return false;
       }
     }
@@ -265,7 +265,7 @@ export default function PurchaseHistory() {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-6">
+    <div className="container mx-auto p-4 md:p-4">
       <div className="space-y-6">
         <div className="bg-white rounded-lg p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border">
           <div className="flex items-center gap-2">
