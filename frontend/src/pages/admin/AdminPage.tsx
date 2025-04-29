@@ -70,21 +70,18 @@ const AdminPage = () => {
       });
 
       if (Array.isArray(response.data)) {
-        console.log("response.data는 배열입니다:", response.data);
         setOrders(response.data);
       } else if (
         response.data &&
         response.data.data &&
         Array.isArray(response.data.data)
       ) {
-        console.log("response.data.data는 배열입니다:", response.data.data);
         setOrders(response.data.data);
       } else if (
         response.data &&
         response.data.orders &&
         Array.isArray(response.data.orders)
       ) {
-        console.log("response.data.orders는 배열입니다:", response.data.orders);
         setOrders(response.data.orders);
       } else {
         console.error("예상치 못한 주문 API 응답 형식:", response.data);
