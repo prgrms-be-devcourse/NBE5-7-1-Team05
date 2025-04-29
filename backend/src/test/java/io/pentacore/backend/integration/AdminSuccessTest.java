@@ -1,4 +1,4 @@
-package io.pentacore.backend;
+package io.pentacore.backend.integration;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.pentacore.backend.global.template.AdminAuthRequiredMockMvcTestBase;
