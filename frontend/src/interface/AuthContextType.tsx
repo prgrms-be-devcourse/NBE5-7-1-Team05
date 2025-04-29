@@ -1,9 +1,9 @@
 import { User } from "./User";
 
 export interface AuthContextType {
-  user: User | null;
   isAuthenticated: boolean;
+  user: User | null;
+  login: (token: string, refreshToken: string, user: User) => void;
+  logout: () => void;
   isLoading: boolean;
-  login: (token: string, user: User) => void;
-  logout: () => Promise<void>;
 }

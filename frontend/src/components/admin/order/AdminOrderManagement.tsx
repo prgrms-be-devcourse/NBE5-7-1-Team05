@@ -18,6 +18,7 @@ import {
 import OrderDetailModal from "./OrderDetailModal";
 import OrderFilter from "./OrderFilter";
 import { Order } from "@/interface/Order";
+import { formatDateTime, isDateInRange } from "../../../utils/date/dateUtils";
 
 interface Props {
   orders: Order[];
@@ -28,20 +29,12 @@ const AdminOrderManagement: React.FC<Props> = ({ orders }) => {
   const [emailFilter, setEmailFilter] = useState("");
 
   const getDateFilteredOrders = () => {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    today.setHours(14, 0, 0, 0);
-    yesterday.setHours(14, 0, 0, 0);
-
     return orders.filter((order) => {
-      const orderDate = new Date(order.date);
-
-      if (dateFilter === "today") {
-        return orderDate >= yesterday && orderDate <= today;
-      }
-      return true;
+      // 분리한 유틸리티 함수 사용
+      return isDateInRange(
+        order.ordered_at,
+        dateFilter === "today" ? "today" : "all"
+      );
     });
   };
 
@@ -90,15 +83,22 @@ const AdminOrderManagement: React.FC<Props> = ({ orders }) => {
           </TableHeader>
           <TableBody>
             {filteredOrders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell className="font-medium">{order.id}</TableCell>
+              <TableRow key={order.order_id}>
+                <TableCell className="font-medium">{order.order_id}</TableCell>
                 <TableCell>{order.email}</TableCell>
-                <TableCell>{new Date(order.date).toLocaleString()}</TableCell>
                 <TableCell>
-                  {order.items.reduce((sum, item) => sum + item.quantity, 0)}개
+                  {/* 분리한 유틸리티 함수 사용 */}
+                  {formatDateTime(order.ordered_at)}
+                </TableCell>
+                <TableCell>
+                  {order.order_products.reduce(
+                    (sum, item) => sum + item.quantity,
+                    0
+                  )}
+                  개
                 </TableCell>
                 <TableCell className="text-right">
-                  {order.totalAmount.toLocaleString()}원
+                  {order.total_price.toLocaleString()}원
                 </TableCell>
                 <TableCell className="text-center">
                   <OrderDetailModal order={order} />

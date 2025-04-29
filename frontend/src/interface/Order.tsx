@@ -25,6 +25,7 @@ export interface OrderResponse {
   postal_code: string;
   ordered_at: string;
   total_price: number;
+  is_deleted?: boolean;
   order_products: OrderProduct[];
 }
 

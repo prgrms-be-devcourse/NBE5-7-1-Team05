@@ -1,121 +1,233 @@
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
-// axios 인스턴스 생성 - 모든 API 요청에 공통으로 사용할 설정을 미리 정의
-const api = axios.create({
-  // 환경변수에서 API 기본 URL 가져오기 (예: http://localhost:8080)
+// 토큰 갱신 중인지 여부를 추적하는 플래그
+let isRefreshing = false;
+// 토큰 갱신 완료 후 재시도할 요청들을 저장하는 배열
+let refreshSubscribers: Array<(token: string) => void> = [];
+
+// 토큰 만료 여부 확인 함수
+const isTokenExpired = (token: string): boolean => {
+  try {
+    const decoded: any = jwtDecode(token);
+    const currentTime = Date.now() / 1000;
+
+    // 토큰 만료 10초 전에 미리 갱신 시작 (버퍼 적용)
+    return decoded.exp < currentTime + 10;
+  } catch (error) {
+    return true; // 디코딩 실패 시 만료된 것으로 간주
+  }
+};
+
+// 토큰 갱신 완료 후 대기 중인 요청들을 처리하는 함수
+const onRefreshed = (newToken: string) => {
+  refreshSubscribers.forEach((callback) => callback(newToken));
+  refreshSubscribers = [];
+};
+
+// 토큰 갱신 실패 시 대기 중인 요청들을 모두 에러로 처리하는 함수
+const onRefreshError = (error: any) => {
+  refreshSubscribers.forEach((callback) => callback(""));
+  refreshSubscribers = [];
+  return Promise.reject(error);
+};
+
+// 토큰 갱신 중에 새로운 요청이 오면 대기시키는 함수
+const addSubscriber = (callback: (token: string) => void) => {
+  refreshSubscribers.push(callback);
+};
+
+export const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  headers: {
-    // 모든 요청의 기본 Content-Type을 JSON으로 설정
-    "Content-Type": "application/json",
-  },
+  withCredentials: true,
 });
 
-// 요청 인터셉터 - 모든 API 요청이 서버로 전송되기 전에 실행됨
-api.interceptors.request.use(
-  (config) => {
-    // 로컬 스토리지에서 관리자 액세스 토큰 가져오기
-    const token = localStorage.getItem("adminToken");
+// refreshAccessToken 함수 개선
+const refreshAccessToken = async (): Promise<string> => {
+  try {
+    const refreshToken = localStorage.getItem("refreshToken");
 
-    // 토큰이 존재하면 요청 헤더에 Authorization 추가
-    if (token) {
-      // Bearer 스키마를 사용하여 JWT 토큰을 헤더에 추가
-      config.headers.Authorization = `Bearer ${token}`;
+    if (!refreshToken) {
+      throw new Error("No refresh token available");
     }
 
-    // 수정된 config 객체 반환
+    console.log("토큰 재발급 요청 시작");
+
+    const response = await axios.post(
+      `${import.meta.env.VITE_API_BASE_URL}/admin/reissue-token`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${refreshToken}`,
+        },
+      }
+    );
+
+    const newAccessToken = response.headers["authorization"]?.replace(
+      "Bearer ",
+      ""
+    );
+    const newRefreshToken = response.headers["refresh"];
+
+    if (!newAccessToken) {
+      throw new Error("Token refresh failed: No new access token");
+    }
+
+    localStorage.setItem("adminToken", newAccessToken);
+    if (newRefreshToken) {
+      localStorage.setItem("refreshToken", newRefreshToken);
+    }
+
+    console.log("토큰 재발급 성공!");
+    return newAccessToken;
+  } catch (error: any) {
+    console.error("토큰 재발급 실패:", error);
+    // 오류 발생 시 토큰과 유저 정보 삭제
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("adminUser");
+    throw error;
+  }
+};
+
+api.interceptors.request.use(
+  async (config) => {
+    const token = localStorage.getItem("adminToken");
+
+    if (token) {
+      // 요청 전에 토큰 만료 여부 확인
+      if (isTokenExpired(token)) {
+        console.log("토큰이 만료되었거나 곧 만료됩니다. 갱신 시도 중...");
+
+        // 이미 토큰 갱신 중이면 현재 요청을 대기열에 추가
+        if (isRefreshing) {
+          console.log("이미 토큰 갱신 중... 요청을 대기열에 추가합니다.");
+
+          return new Promise((resolve) => {
+            addSubscriber((newToken: string) => {
+              config.headers.Authorization = `Bearer ${newToken}`;
+              resolve(config);
+            });
+          });
+        }
+
+        // 토큰 갱신 프로세스 시작
+        isRefreshing = true;
+
+        try {
+          const newToken = await refreshAccessToken();
+          config.headers.Authorization = `Bearer ${newToken}`;
+
+          // 토큰 갱신 완료, 대기 중인 요청 처리
+          console.log(
+            `토큰 갱신 완료. 대기 중인 요청 ${refreshSubscribers.length}개 처리 중...`
+          );
+          onRefreshed(newToken);
+          isRefreshing = false;
+        } catch (error) {
+          console.error("사전 토큰 갱신 실패:", error);
+          isRefreshing = false;
+          onRefreshError(error);
+
+          // 현재 URL이 로그인 페이지가 아닌 경우에만 리다이렉트
+          if (!window.location.href.includes("/admin/login")) {
+            alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+            window.location.href = "/admin/login";
+          }
+
+          throw error;
+        }
+      } else {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+
     return config;
   },
   (error) => {
-    // 요청 전 에러 발생 시 에러를 그대로 반환
     return Promise.reject(error);
   }
 );
 
-// 응답 인터셉터 - 서버에서 응답을 받은 후 실행됨
 api.interceptors.response.use(
-  // 성공 응답(200번대)은 그대로 반환
-  (response) => response,
-
-  // 에러 응답 처리
+  (response) => {
+    return response;
+  },
   async (error) => {
-    // 실패한 요청의 원본 설정 저장
     const originalRequest = error.config;
 
-    // 401 Unauthorized 에러(토큰 만료) 처리
-    // _retry 플래그로 무한 재시도 방지
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      // 재시도 플래그 설정 - 이 요청이 이미 한 번 실패했음을 표시
+    // 이미 재시도한 요청이면 더 이상 시도하지 않음
+    if (originalRequest._retry) {
+      return Promise.reject(error);
+    }
+
+    // 토큰 재발급 엔드포인트나 로그인 엔드포인트에서 실패한 경우에는 재시도하지 않음
+    if (
+      originalRequest.url?.includes("/reissue-token") ||
+      originalRequest.url?.includes("/login")
+    ) {
+      return Promise.reject(error);
+    }
+
+    // 403 오류 (권한 부족) 또는 401 오류 (인증 실패)인 경우
+    if (error.response?.status === 403 || error.response?.status === 401) {
       originalRequest._retry = true;
 
+      // 이미 토큰 갱신 중이면 현재 요청을 대기열에 추가
+      if (isRefreshing) {
+        console.log("이미 토큰 갱신 중... 요청을 대기열에 추가합니다.");
+        return new Promise((resolve, reject) => {
+          addSubscriber((token: string) => {
+            if (token) {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              resolve(api(originalRequest));
+            } else {
+              reject(error);
+            }
+          });
+        });
+      }
+
+      // 토큰 갱신 프로세스 시작
+      isRefreshing = true;
+      console.log(
+        `${error.response?.status} 오류 발생. 토큰 갱신 프로세스 시작`
+      );
+
       try {
-        // 로컬 스토리지에서 리프레시 토큰 가져오기
-        const refreshToken = localStorage.getItem("refreshToken");
+        const newAccessToken = await refreshAccessToken();
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
-        // 리프레시 토큰이 없으면 에러 발생
-        if (!refreshToken) {
-          throw new Error("No refresh token available");
-        }
-
-        // 토큰 재발급 API 호출
-        // 주의: 여기서는 api 인스턴스가 아닌 순수 axios를 사용 (인터셉터 무한 루프 방지)
-        const response = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL}${
-            import.meta.env.VITE_API_REISSUE_TOKEN
-          }`,
-          { refreshToken } // 요청 본문에 리프레시 토큰 포함
+        // 토큰 갱신이 성공하면 대기 중인 요청들을 처리
+        console.log(
+          `토큰 갱신 완료. 대기 중인 요청 ${refreshSubscribers.length}개 처리 중...`
         );
+        onRefreshed(newAccessToken);
+        isRefreshing = false;
 
-        // 응답 헤더에서 새로운 액세스 토큰 추출
-        // 서버가 access-token 또는 authorization 헤더로 전달할 수 있음
-        const newAccessToken = response.headers["authorization"];
-        // 응답 헤더에서 새로운 리프레시 토큰 추출
-        const newRefreshToken = response.headers["refresh"];
-        console.log("curToken", localStorage.getItem("adinToken"));
-        console.log("newToken", newAccessToken);
-        console.log("newRefreshToken", newRefreshToken);
-
-        // 새로운 액세스 토큰이 있는 경우
-        if (newAccessToken) {
-          // Bearer 접두사 제거
-          const cleanAccessToken = newAccessToken.replace("Bearer ", "");
-
-          // 새 액세스 토큰을 로컬 스토리지에 저장
-          localStorage.setItem("adminToken", cleanAccessToken);
-
-          // 새 리프레시 토큰이 있으면 교체
-          if (newRefreshToken) {
-            localStorage.setItem("refreshToken", newRefreshToken);
-          }
-
-          // 실패했던 원래 요청에 새 액세스 토큰 적용
-          originalRequest.headers.Authorization = `Bearer ${cleanAccessToken}`;
-
-          // 원래 요청 재시도
-          return api(originalRequest);
-        } else {
-          // 새 토큰을 받지 못한 경우 에러 발생
-          throw new Error("No new token received");
-        }
+        return api(originalRequest);
       } catch (refreshError) {
-        // 토큰 재발급 실패 (리프레시 토큰 만료 등)
+        // 토큰 갱신에 실패하면 대기 중인 요청들을 모두 에러로 처리
+        console.error("토큰 갱신 실패. 대기 중인 요청 취소");
+        isRefreshing = false;
+        onRefreshError(refreshError);
 
-        // 모든 인증 정보 삭제
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("adminUser");
+        // 현재 URL이 로그인 페이지가 아닌 경우에만 리다이렉트
+        if (!window.location.href.includes("/admin/login")) {
+          // 사용자에게 세션 만료 알림
+          alert("세션이 만료되었습니다. 다시 로그인해주세요.");
 
-        // 로그인 페이지로 강제 이동
-        window.location.href = "/admin/login";
+          // 로그인 페이지로 리다이렉트
+          window.location.href = "/admin/login";
+        }
 
-        // 에러 반환
         return Promise.reject(refreshError);
       }
     }
 
-    // 401이 아닌 다른 에러는 그대로 반환
     return Promise.reject(error);
   }
 );
 
-// 설정된 axios 인스턴스 내보내기
+export { refreshAccessToken };
 export default api;

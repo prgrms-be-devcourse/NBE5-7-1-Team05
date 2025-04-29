@@ -1,12 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import NavBar from "./components/navigation/NavBar";
+import NavBar from "./components/layout/NavBar";
 import ShoppingCartPage from "./pages/shop/ShoppingCartPage";
 import AdminSignupPage from "./pages/admin/AdminSignupPage";
 import AdminPage from "./pages/admin/AdminPage";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import { AuthProvider } from "./contexts/AuthContext";
 import PrivateRoute from "./components/auth/PrivateRoute";
-import PurchaseHistory from "./pages/PurchaseHistory";
+import PurchaseHistory from "./pages/user/PurchaseHistory";
+import Footer from "./components/layout/Footer";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
               />
             </Routes>
           </main>
+          <Footer />
         </div>
       </AuthProvider>
     </Router>

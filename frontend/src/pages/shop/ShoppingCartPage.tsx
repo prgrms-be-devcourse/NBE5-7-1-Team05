@@ -18,8 +18,11 @@ const ShoppingCartPage = () => {
     const fetchProducts = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get("http://localhost:8080/products");
-        console.log(response);
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}${
+            import.meta.env.VITE_API_PRODUCTS
+          }`
+        );
         const activeProducts = response.data.data.filter(
           (product: Product) => !product.deleted
         );
@@ -86,7 +89,6 @@ const ShoppingCartPage = () => {
   if (isLoading) {
     return (
       <div className="container mx-auto p-4 mt-4">
-        <h1 className="text-2xl font-semibold mb-6">상품 대시보드</h1>
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brown-900"></div>
         </div>
@@ -97,7 +99,6 @@ const ShoppingCartPage = () => {
   if (error) {
     return (
       <div className="container mx-auto p-4 mt-4">
-        <h1 className="text-2xl font-semibold mb-6">상품 대시보드</h1>
         <div className="text-center p-8 bg-red-50 rounded-lg">
           <p className="text-red-600">{error}</p>
           <button
@@ -113,7 +114,6 @@ const ShoppingCartPage = () => {
 
   return (
     <div className="container mx-auto p-4 mt-4">
-      <h1 className="text-2xl font-semibold mb-6">상품 대시보드</h1>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <ProductList

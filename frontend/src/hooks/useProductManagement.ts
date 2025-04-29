@@ -5,6 +5,7 @@ import {
   ValidationError,
   validateProduct,
 } from "@/utils/validation/ProductValidation";
+import { api } from "@/utils/api/axiosConfig";
 
 interface UseProductManagementProps {
   onAddProduct: (product: Product) => void;
@@ -23,7 +24,7 @@ export const useProductManagement = ({
     name: "",
     category: "",
     price: 0,
-    imageUrl: "",
+    image_url: "",
     stock: 0,
   });
   const [errors, setErrors] = useState<ValidationError[]>([]);
@@ -41,8 +42,9 @@ export const useProductManagement = ({
 
     setIsLoading(true);
     try {
-      const response = await axios.post(
-        "http://localhost:8080/admin/products",
+      console.log(newProduct);
+      const response = await api.post(
+        `/admin${import.meta.env.VITE_API_PRODUCTS}`,
         newProduct
       );
 
@@ -54,7 +56,7 @@ export const useProductManagement = ({
           name: "",
           category: "",
           price: 0,
-          imageUrl: "",
+          image_url: "",
           stock: 0,
         });
         setErrors([]);
@@ -80,22 +82,6 @@ export const useProductManagement = ({
     }
   };
 
-  const handleDelete = async (productId: number) => {
-    if (!window.confirm("정말로 이 상품을 삭제하시겠습니까?")) {
-      return;
-    }
-
-    try {
-      await axios.delete(`http://localhost:8080/admin/products/${productId}`);
-      onDeleteProduct(productId);
-      onRefreshProducts();
-      alert("상품이 성공적으로 삭제되었습니다.");
-    } catch (error) {
-      console.error("상품 삭제 실패:", error);
-      alert("상품 삭제 중 오류가 발생했습니다.");
-    }
-  };
-
   const handleAddStock = (product: Product) => {
     setEditingProduct(product);
     setAddStock(0);
@@ -111,12 +97,13 @@ export const useProductManagement = ({
     }
 
     try {
-      await axios.put(
-        `http://localhost:8080/admin/products/${editingProduct.id}`,
+      await api.put(
+        `/admin${import.meta.env.VITE_API_PRODUCTS}/${editingProduct.id}`,
         {
           stock: addStock,
         }
       );
+
       onUpdateProduct(editingProduct.id, addStock);
       setEditDialogOpen(false);
       setEditingProduct(null);
@@ -125,6 +112,33 @@ export const useProductManagement = ({
     } catch (error) {
       console.error("재고 추가 실패:", error);
       alert("재고 추가 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleDelete = async (productId: number) => {
+    if (!window.confirm("정말로 이 상품을 삭제하시겠습니까?")) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("adminToken");
+      await axios.delete(
+        `${import.meta.env.VITE_API_BASE_URL}/admin${
+          import.meta.env.VITE_API_PRODUCTS
+        }/${productId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      onDeleteProduct(productId);
+      onRefreshProducts();
+      alert("상품이 성공적으로 삭제되었습니다.");
+    } catch (error) {
+      console.error("상품 삭제 실패:", error);
+      alert("상품 삭제 중 오류가 발생했습니다.");
     }
   };
 

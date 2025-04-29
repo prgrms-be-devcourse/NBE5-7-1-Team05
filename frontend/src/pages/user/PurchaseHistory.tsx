@@ -10,6 +10,14 @@ import { CancelledPurchases } from "@/components/history/CancelledPurchases";
 import { CancelOrderDialog } from "@/components/history/CancelOrderDialog";
 import { Order } from "@/interface/Order";
 import { orderService } from "@/utils/api/orderService";
+import { Mail } from "lucide-react";
+
+import {
+  toKSTDate,
+  calculateDeliveryStatus,
+  formatDate,
+  formatDateTime,
+} from "@/utils/date/dateUtils";
 
 export default function PurchaseHistory() {
   const navigate = useNavigate();
@@ -17,42 +25,13 @@ export default function PurchaseHistory() {
   const [isLoading, setIsLoading] = useState(true);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [statusFilter, setStatusFilter] = useState<
-    "all" | "processing" | "shipped" | "delivered"
+    "all" | "processing" | "delivered"
   >("all");
   const [showCancelled, setShowCancelled] = useState(false);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
-
-  // 배송 상태를 시간 기준으로 계산하는 함수
-  const calculateDeliveryStatus = (order: Order): Order["status"] => {
-    if (order.is_deleted) return "processing";
-
-    const now = new Date();
-    const orderDate = new Date(order.ordered_at);
-
-    // 오늘 오후 2시 기준
-    const todayDeliveryDeadline = new Date();
-    todayDeliveryDeadline.setHours(14, 0, 0, 0);
-
-    // 어제 오후 2시 기준
-    const yesterdayDeliveryDeadline = new Date();
-    yesterdayDeliveryDeadline.setDate(yesterdayDeliveryDeadline.getDate() - 1);
-    yesterdayDeliveryDeadline.setHours(14, 0, 0, 0);
-
-    // 어제 오후 2시 이후 ~ 오늘 오후 2시 이전에 주문했다면 배송완료
-    if (
-      orderDate >= yesterdayDeliveryDeadline &&
-      orderDate < todayDeliveryDeadline &&
-      now > todayDeliveryDeadline
-    ) {
-      return "delivered";
-    }
-
-    // 그 외의 경우 처리중 상태
-    return "processing";
-  };
 
   const loadOrders = async () => {
     const savedEmail = localStorage.getItem("purchaseEmail");
@@ -66,26 +45,44 @@ export default function PurchaseHistory() {
 
     try {
       const response = await orderService.getOrdersByEmail(savedEmail);
-      // API 응답을 Order 형식으로 변환
-      let ordersWithStatus: Order[] = [];
+      const data = response.data;
 
-      if (Array.isArray(response)) {
-        ordersWithStatus = response.map((order) => ({
-          ...order,
-          status: calculateDeliveryStatus(order),
-          is_deleted: false,
-        }));
+      let normalOrders: Order[] = [];
+      let cancelledOrders: Order[] = [];
+
+      if (Array.isArray(data)) {
+        data.forEach((order) => {
+          const isDeleted = order.is_deleted || false;
+
+          const orderWithStatus = {
+            ...order,
+            is_deleted: isDeleted,
+            status: calculateDeliveryStatus(order),
+          };
+
+          if (isDeleted) {
+            cancelledOrders.push(orderWithStatus);
+          } else {
+            normalOrders.push(orderWithStatus);
+          }
+        });
       } else if (response && typeof response === "object") {
-        ordersWithStatus = [
-          {
-            ...(response as Order),
-            status: calculateDeliveryStatus(response as Order),
-            is_deleted: false,
-          },
-        ];
+        const isDeleted = (data as Order).is_deleted || false;
+
+        const orderWithStatus = {
+          ...(data as Order),
+          is_deleted: isDeleted,
+          status: calculateDeliveryStatus(data as Order),
+        };
+
+        if (isDeleted) {
+          cancelledOrders.push(orderWithStatus);
+        } else {
+          normalOrders.push(orderWithStatus);
+        }
       }
 
-      setOrders(ordersWithStatus);
+      setOrders([...normalOrders, ...cancelledOrders]);
     } catch (err) {
       console.error("Failed to load orders:", err);
       setError(
@@ -110,7 +107,6 @@ export default function PurchaseHistory() {
 
     try {
       await orderService.cancelOrder({ order_id: selectedOrderId });
-      // 주문 취소 후 목록 업데이트
       setOrders(
         orders.map((order) =>
           order.order_id === selectedOrderId
@@ -132,8 +128,6 @@ export default function PurchaseHistory() {
     switch (status) {
       case "processing":
         return "bg-yellow-100 text-yellow-800";
-      case "shipped":
-        return "bg-blue-100 text-blue-800";
       case "delivered":
         return "bg-green-100 text-green-800";
       default:
@@ -141,41 +135,28 @@ export default function PurchaseHistory() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-
   const filteredOrders = orders.filter((order) => {
-    // Filter by date
+    if (order.is_deleted) {
+      return false;
+    }
+
     if (date) {
-      const orderDate = new Date(order.ordered_at);
-      if (orderDate.toDateString() !== date.toDateString()) {
+      const orderDate = toKSTDate(order.ordered_at);
+      const filterDate = new Date(date);
+      if (
+        orderDate.getFullYear() !== filterDate.getFullYear() ||
+        orderDate.getMonth() !== filterDate.getMonth() ||
+        orderDate.getDate() !== filterDate.getDate()
+      ) {
         return false;
       }
     }
 
-    // Filter by status
     if (statusFilter !== "all" && order.status !== statusFilter) {
       return false;
     }
 
-    // Always exclude cancelled orders from main list
-    return !order.is_deleted;
+    return true;
   });
 
   const cancelledOrders = orders.filter((order) => order.is_deleted);
@@ -192,11 +173,23 @@ export default function PurchaseHistory() {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-6">
+    <div className="container mx-auto p-4 md:p-4">
       <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-          <h1 className="text-2xl md:text-3xl font-bold">구매 내역</h1>
-          <Button variant="outline" onClick={() => setIsEmailDialogOpen(true)}>
+        <div className="bg-white rounded-lg p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border">
+          <div className="flex items-center gap-2">
+            <Mail className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <span className="text-sm font-medium">현재 이메일:</span>
+              <span className="ml-2 text-sm">
+                {localStorage.getItem("purchaseEmail")}
+              </span>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => setIsEmailDialogOpen(true)}
+            className="w-full sm:w-auto"
+          >
             이메일 변경
           </Button>
         </div>
