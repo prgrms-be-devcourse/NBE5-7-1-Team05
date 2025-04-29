@@ -56,7 +56,6 @@ const AdminPage = () => {
 
   const fetchOrders = async () => {
     try {
-      // adminToken 가져오기 (로컬 스토리지나 상태 관리에서 가져오는 방식으로 수정 필요)
       const adminToken = localStorage.getItem("adminToken");
 
       if (!adminToken) {
@@ -64,17 +63,12 @@ const AdminPage = () => {
         return;
       }
 
-      // Authorization 헤더 추가
       const response = await api.get("/admin/orders", {
         headers: {
           Authorization: `Bearer ${adminToken}`,
         },
       });
 
-      // 응답 구조 확인을 위해 전체 응답 로깅
-      console.log("전체 주문 응답:", response);
-
-      // 응답 데이터 구조에 따라 적절하게 처리
       if (Array.isArray(response.data)) {
         console.log("response.data는 배열입니다:", response.data);
         setOrders(response.data);

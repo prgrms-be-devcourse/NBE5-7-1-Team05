@@ -12,90 +12,26 @@ import { Order } from "@/interface/Order";
 import { orderService } from "@/utils/api/orderService";
 import { Mail } from "lucide-react";
 
+import {
+  toKSTDate,
+  calculateDeliveryStatus,
+  formatDate,
+  formatDateTime,
+} from "@/utils/date/dateUtils";
+
 export default function PurchaseHistory() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [statusFilter, setStatusFilter] = useState<
-    "all" | "processing" | "shipped" | "delivered"
+    "all" | "processing" | "delivered"
   >("all");
   const [showCancelled, setShowCancelled] = useState(false);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
-
-  const calculateDeliveryStatus = (order: Order): Order["status"] => {
-    if (order.is_deleted) return "processing";
-
-    const now = new Date();
-
-    const orderDate = new Date(order.ordered_at);
-
-    if (!order.ordered_at.includes("Z") && !order.ordered_at.includes("+")) {
-      orderDate.setHours(orderDate.getHours() + 9);
-    }
-
-    console.log("주문 날짜/시간 (KST):", orderDate.toLocaleString("ko-KR"));
-    console.log("현재 날짜/시간 (KST):", now.toLocaleString("ko-KR"));
-
-    // 오늘 오후 2시 기준
-    const todayDeliveryDeadline = new Date();
-    todayDeliveryDeadline.setHours(14, 0, 0, 0);
-
-    // 어제 오후 2시 기준
-    const yesterdayDeliveryDeadline = new Date();
-    yesterdayDeliveryDeadline.setDate(yesterdayDeliveryDeadline.getDate() - 1);
-    yesterdayDeliveryDeadline.setHours(14, 0, 0, 0);
-
-    console.log(
-      "오늘 오후 2시 기준:",
-      todayDeliveryDeadline.toLocaleString("ko-KR")
-    );
-    console.log(
-      "어제 오후 2시 기준:",
-      yesterdayDeliveryDeadline.toLocaleString("ko-KR")
-    );
-
-    // 오늘 주문 (오늘 오후 2시 이전)
-    if (
-      orderDate.getDate() === now.getDate() &&
-      orderDate.getMonth() === now.getMonth() &&
-      orderDate.getFullYear() === now.getFullYear() &&
-      now.getHours() < 14
-    ) {
-      return "processing";
-    }
-
-    // 오늘 주문 (오늘 오후 2시 이후)
-    if (
-      orderDate.getDate() === now.getDate() &&
-      orderDate.getMonth() === now.getMonth() &&
-      orderDate.getFullYear() === now.getFullYear()
-    ) {
-      return "processing";
-    }
-
-    // 어제 주문
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    if (
-      orderDate.getDate() === yesterday.getDate() &&
-      orderDate.getMonth() === yesterday.getMonth() &&
-      orderDate.getFullYear() === yesterday.getFullYear()
-    ) {
-      // 어제 오후 2시 이전 주문 + 현재 오후 2시 이후 => 배송 완료
-      if (orderDate.getHours() < 14 && now.getHours() >= 14) {
-        return "delivered";
-      }
-      // 그 외의 경우 배송 중
-      return "shipped";
-    }
-
-    // 이틀 이상 지난 주문은 배송 완료
-    return "delivered";
-  };
 
   const loadOrders = async () => {
     const savedEmail = localStorage.getItem("purchaseEmail");
@@ -122,7 +58,7 @@ export default function PurchaseHistory() {
           const orderWithStatus = {
             ...order,
             is_deleted: isDeleted,
-            status: isDeleted ? "processing" : calculateDeliveryStatus(order),
+            status: calculateDeliveryStatus(order),
           };
 
           console.log(orderWithStatus);
@@ -139,9 +75,7 @@ export default function PurchaseHistory() {
         const orderWithStatus = {
           ...(data as Order),
           is_deleted: isDeleted,
-          status: isDeleted
-            ? "processing"
-            : calculateDeliveryStatus(data as Order),
+          status: calculateDeliveryStatus(data as Order),
         };
 
         if (isDeleted) {
@@ -199,8 +133,6 @@ export default function PurchaseHistory() {
     switch (status) {
       case "processing":
         return "bg-yellow-100 text-yellow-800";
-      case "shipped":
-        return "bg-blue-100 text-blue-800";
       case "delivered":
         return "bg-green-100 text-green-800";
       default:
@@ -208,41 +140,23 @@ export default function PurchaseHistory() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-
-  // 필터링 시 취소되지 않은 주문만 표시하도록 명확하게 수정
   const filteredOrders = orders.filter((order) => {
-    // 취소된 주문은 제외
     if (order.is_deleted) {
       return false;
     }
 
-    // 날짜 필터 적용
     if (date) {
-      const orderDate = new Date(order.ordered_at);
-      if (orderDate.toDateString() !== date.toDateString()) {
+      const orderDate = toKSTDate(order.ordered_at);
+      const filterDate = new Date(date);
+      if (
+        orderDate.getFullYear() !== filterDate.getFullYear() ||
+        orderDate.getMonth() !== filterDate.getMonth() ||
+        orderDate.getDate() !== filterDate.getDate()
+      ) {
         return false;
       }
     }
 
-    // 상태 필터 적용
     if (statusFilter !== "all" && order.status !== statusFilter) {
       return false;
     }
@@ -250,7 +164,6 @@ export default function PurchaseHistory() {
     return true;
   });
 
-  // 취소된 주문만 따로 필터링
   const cancelledOrders = orders.filter((order) => order.is_deleted);
 
   const handleEmailChange = (email: string) => {
@@ -265,7 +178,7 @@ export default function PurchaseHistory() {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-6">
+    <div className="container mx-auto p-4 md:p-4">
       <div className="space-y-6">
         <div className="bg-white rounded-lg p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border">
           <div className="flex items-center gap-2">

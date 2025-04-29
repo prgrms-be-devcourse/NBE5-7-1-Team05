@@ -19,10 +19,8 @@ import { cn } from "@/lib/utils";
 interface PurchaseFiltersProps {
   date: Date | undefined;
   setDate: (date: Date | undefined) => void;
-  statusFilter: "all" | "processing" | "shipped" | "delivered";
-  setStatusFilter: (
-    value: "all" | "processing" | "shipped" | "delivered"
-  ) => void;
+  statusFilter: "all" | "processing" | "delivered";
+  setStatusFilter: (value: "all" | "processing" | "delivered") => void;
   onReset: () => void;
 }
 

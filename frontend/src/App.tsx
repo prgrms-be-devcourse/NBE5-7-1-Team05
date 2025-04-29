@@ -6,7 +6,7 @@ import AdminPage from "./pages/admin/AdminPage";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import { AuthProvider } from "./contexts/AuthContext";
 import PrivateRoute from "./components/auth/PrivateRoute";
-import PurchaseHistory from "./pages/PurchaseHistory";
+import PurchaseHistory from "./pages/user/PurchaseHistory";
 import Footer from "./components/layout/Footer";
 
 function App() {
