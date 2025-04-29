@@ -1,4 +1,4 @@
-package io.pentacore.backend;
+package io.pentacore.backend.integration;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.pentacore.backend.global.template.UserMockMvcTestBase;
@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Slf4j
-public class OrderCRUDTest extends UserMockMvcTestBase {
+public class OrderSuccessTest extends UserMockMvcTestBase {
 
     @Test
     @DisplayName("단일 상품에 대한 주문 결제")

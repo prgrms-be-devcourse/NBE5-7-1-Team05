@@ -1,6 +1,5 @@
-package io.pentacore.backend;
+package io.pentacore.backend.integration;
 
-import io.pentacore.backend.global.template.MockMvcTestBase;
 import io.pentacore.backend.global.template.UserMockMvcTestBase;
 import io.pentacore.backend.global.utils.TestPaymentDtoBuilder;
 import io.pentacore.backend.global.utils.TestProductBuilder;
