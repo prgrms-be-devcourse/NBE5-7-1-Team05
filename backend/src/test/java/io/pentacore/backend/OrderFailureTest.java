@@ -1,6 +1,5 @@
 package io.pentacore.backend;
 
-import io.pentacore.backend.global.template.MockMvcTestBase;
 import io.pentacore.backend.global.template.UserMockMvcTestBase;
 import io.pentacore.backend.global.utils.TestPaymentDtoBuilder;
 import io.pentacore.backend.global.utils.TestProductBuilder;
@@ -50,7 +49,7 @@ public class OrderFailureTest extends UserMockMvcTestBase {
     }
     
     @Test
-    @DisplayName("존재하지 않는 상품 주문 시 404 에러")
+    @DisplayName("존재하지 않는 상품 주문 시 400 에러")
     void payNullProduct() throws Exception {
         // given
         PaymentRequestDto paymentRequestDto = TestPaymentDtoBuilder.build(
@@ -63,12 +62,12 @@ public class OrderFailureTest extends UserMockMvcTestBase {
         ResultActions resultActions = mockPerformPayment(paymentRequestDto);
 
         // then
-        resultActions.andExpect(status().isNotFound());
+        resultActions.andExpect(status().isBadRequest());
         
     }
 
     @Test
-    @DisplayName("존재하지 않는 주문 취소 시 404 에러")
+    @DisplayName("존재하지 않는 주문 취소 시 400 에러")
     void deleteRequestToNullOrder() throws Exception {
         // given
         long orderId = random.nextLong();
@@ -76,12 +75,12 @@ public class OrderFailureTest extends UserMockMvcTestBase {
         // when & then
         mockMvc.perform(
                 delete("/orders/" + orderId)
-        ).andExpect(status().isNotFound());
+        ).andExpect(status().isBadRequest());
 
     }
 
     @Test
-    @DisplayName("주어진 이메일로 주문된 내역이 존재하지 않을 경우 404 에러")
+    @DisplayName("주어진 이메일로 주문된 내역이 존재하지 않을 경우 400 에러")
     void getRequestToNullOrder() throws Exception {
         // given
         String email = "test@gmail.com";
@@ -89,7 +88,7 @@ public class OrderFailureTest extends UserMockMvcTestBase {
         // when & then
         mockMvc.perform(
                 get("/orders?email=" + email)
-        ).andExpect(status().isNotFound());
+        ).andExpect(status().isBadRequest());
 
     }
 

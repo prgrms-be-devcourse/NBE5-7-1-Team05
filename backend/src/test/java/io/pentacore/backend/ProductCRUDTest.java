@@ -1,21 +1,17 @@
 package io.pentacore.backend;
 
-import io.pentacore.backend.admin.domain.Admin;
 import io.pentacore.backend.global.template.AdminAuthRequiredMockMvcTestBase;
-import io.pentacore.backend.global.template.MockMvcTestBase;
 import io.pentacore.backend.product.domain.Product;
 import io.pentacore.backend.product.dto.ProductRequestDto;
 import io.pentacore.backend.product.dto.UpdateRequest;
 import io.pentacore.backend.global.utils.TestProductBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
