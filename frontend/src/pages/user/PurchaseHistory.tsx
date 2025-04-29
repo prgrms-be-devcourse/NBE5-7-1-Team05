@@ -47,7 +47,6 @@ export default function PurchaseHistory() {
       const response = await orderService.getOrdersByEmail(savedEmail);
       const data = response.data;
 
-      console.log(data);
       let normalOrders: Order[] = [];
       let cancelledOrders: Order[] = [];
 
@@ -60,8 +59,6 @@ export default function PurchaseHistory() {
             is_deleted: isDeleted,
             status: calculateDeliveryStatus(order),
           };
-
-          console.log(orderWithStatus);
 
           if (isDeleted) {
             cancelledOrders.push(orderWithStatus);
@@ -86,8 +83,6 @@ export default function PurchaseHistory() {
       }
 
       setOrders([...normalOrders, ...cancelledOrders]);
-      console.log("Normal orders:", normalOrders);
-      console.log("Cancelled orders:", cancelledOrders);
     } catch (err) {
       console.error("Failed to load orders:", err);
       setError(
