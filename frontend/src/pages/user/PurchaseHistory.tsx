@@ -12,6 +12,13 @@ import { Order } from "@/interface/Order";
 import { orderService } from "@/utils/api/orderService";
 import { Mail } from "lucide-react";
 
+import {
+  toKSTDate,
+  calculateDeliveryStatus,
+  formatDate,
+  formatDateTime,
+} from "@/utils/date/dateUtils";
+
 export default function PurchaseHistory() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -25,69 +32,6 @@ export default function PurchaseHistory() {
   const [error, setError] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
-
-  // 한국 시간으로 날짜 변환하는 함수
-  const toKSTDate = (dateString: string): Date => {
-    const date = new Date(dateString);
-
-    // 이미 KST 시간(+09:00)이 포함된 경우는 그대로 반환
-    if (dateString.includes("Z") || dateString.includes("+")) {
-      return date;
-    }
-
-    date.setHours(date.getHours() + 8);
-    return date;
-  };
-
-  const calculateDeliveryStatus = (order: Order): Order["status"] => {
-    if (order.is_deleted) return "processing";
-
-    // 현재 시간 (한국 시간)
-    const now = new Date();
-
-    // 주문 시간 (한국 시간으로 변환)
-    const orderDate = toKSTDate(order.ordered_at);
-
-    console.log("주문 날짜/시간 (KST):", orderDate.toLocaleString("ko-KR"));
-    console.log("현재 날짜/시간 (KST):", now.toLocaleString("ko-KR"));
-
-    // 오늘 오후 2시 기준
-    const todayDeliveryDeadline = new Date();
-    todayDeliveryDeadline.setHours(14, 0, 0, 0);
-
-    // 어제 오후 2시 기준
-    const yesterdayDeliveryDeadline = new Date();
-    yesterdayDeliveryDeadline.setDate(yesterdayDeliveryDeadline.getDate() - 1);
-    yesterdayDeliveryDeadline.setHours(14, 0, 0, 0);
-
-    console.log(
-      "오늘 오후 2시 기준:",
-      todayDeliveryDeadline.toLocaleString("ko-KR")
-    );
-    console.log(
-      "어제 오후 2시 기준:",
-      yesterdayDeliveryDeadline.toLocaleString("ko-KR")
-    );
-
-    // 새로운 배송 상태 계산 로직:
-
-    // 1. 오늘 주문된 경우 - 항상 "처리 중(processing)"
-    if (
-      orderDate.getDate() === now.getDate() &&
-      orderDate.getMonth() === now.getMonth() &&
-      orderDate.getFullYear() === now.getFullYear()
-    ) {
-      return "processing";
-    }
-
-    // . 어제 오후 2시 이전에 주문된 경우 - "배송 완료(delivered)"
-    if (orderDate < todayDeliveryDeadline) {
-      return "delivered";
-    }
-
-    // 기본값으로 "처리 중(processing)" 반환
-    return "processing";
-  };
 
   const loadOrders = async () => {
     const savedEmail = localStorage.getItem("purchaseEmail");
@@ -114,7 +58,7 @@ export default function PurchaseHistory() {
           const orderWithStatus = {
             ...order,
             is_deleted: isDeleted,
-            status: isDeleted ? "processing" : calculateDeliveryStatus(order),
+            status: calculateDeliveryStatus(order),
           };
 
           console.log(orderWithStatus);
@@ -131,9 +75,7 @@ export default function PurchaseHistory() {
         const orderWithStatus = {
           ...(data as Order),
           is_deleted: isDeleted,
-          status: isDeleted
-            ? "processing"
-            : calculateDeliveryStatus(data as Order),
+          status: calculateDeliveryStatus(data as Order),
         };
 
         if (isDeleted) {
@@ -198,41 +140,14 @@ export default function PurchaseHistory() {
     }
   };
 
-  // 한국 시간으로 날짜 포맷팅
-  const formatDate = (dateString: string) => {
-    const kstDate = toKSTDate(dateString);
-    return kstDate.toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  // 한국 시간으로 날짜 및 시간 포맷팅
-  const formatDateTime = (dateString: string) => {
-    const kstDate = toKSTDate(dateString);
-    return kstDate.toLocaleString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-
-  // 필터링 시 취소되지 않은 주문만 표시하도록 명확하게 수정
   const filteredOrders = orders.filter((order) => {
-    // 취소된 주문은 제외
     if (order.is_deleted) {
       return false;
     }
 
-    // 날짜 필터 적용 (한국 시간 기준)
     if (date) {
       const orderDate = toKSTDate(order.ordered_at);
       const filterDate = new Date(date);
-      // 날짜만 비교 (시간 제외)
       if (
         orderDate.getFullYear() !== filterDate.getFullYear() ||
         orderDate.getMonth() !== filterDate.getMonth() ||
@@ -242,7 +157,6 @@ export default function PurchaseHistory() {
       }
     }
 
-    // 상태 필터 적용
     if (statusFilter !== "all" && order.status !== statusFilter) {
       return false;
     }
@@ -250,7 +164,6 @@ export default function PurchaseHistory() {
     return true;
   });
 
-  // 취소된 주문만 따로 필터링
   const cancelledOrders = orders.filter((order) => order.is_deleted);
 
   const handleEmailChange = (email: string) => {
